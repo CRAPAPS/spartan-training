@@ -8,7 +8,7 @@ export { createClient as createServerSupabaseClient } from '@/utils/supabase/ser
 // NEVER import this in client components or expose via NEXT_PUBLIC_*.
 // Database generic omitted: restore after running `npm run db:generate-types`.
 export const supabaseAdmin = createSupabaseClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'placeholder-build-only',
   { auth: { persistSession: false } },
 );
