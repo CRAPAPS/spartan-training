@@ -6,8 +6,8 @@ import { createServerSupabaseClient } from '@/lib/supabaseServer';
 // Raw untyped admin client — used here because new quiz tables aren't in
 // the generated Database type yet (run npm run db:generate-types after migrating).
 const admin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'placeholder-build-only',
   { auth: { persistSession: false } }
 );
 
