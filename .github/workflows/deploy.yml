@@ -28,7 +28,7 @@ jobs:
           context: .
           file: ./Dockerfile.prod
           push: true
-          tags: ghcr.io/${{ github.repository }}/spartan-app:latest
+          tags: ghcr.io/crapaps/spartan-training/spartan-app:latest
 
       - name: Deploy to KVM via SSH
         uses: appleboy/ssh-action@v1
@@ -62,7 +62,7 @@ jobs:
             cat > docker-compose.yml << 'COMPOSEEOF'
             services:
               spartan-app:
-                image: ghcr.io/${{ github.repository }}/spartan-app:latest
+                image: ghcr.io/crapaps/spartan-training/spartan-app:latest
                 container_name: spartan-app
                 restart: always
                 ports:
@@ -71,7 +71,7 @@ jobs:
             COMPOSEEOF
 
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ github.repository }}/spartan-app:latest
+            docker pull ghcr.io/crapaps/spartan-training/spartan-app:latest
             docker compose up -d --force-recreate spartan-app
             docker image prune -f
 
