@@ -57,7 +57,7 @@ export default function ContactPage() {
               <MonoLabel style={{ marginBottom: '16px', display: 'block' }}>Contact Information</MonoLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
-                  { label: 'Email',      value: 'ciso@shelinfosec.com' },
+                  { label: 'Email',      value: 'mak@palisadeintl.com' },
                   { label: 'Authority',  value: 'Georgia PDSC001719' },
                   { label: 'Instructor', value: 'CFTR001295' },
                   { label: 'Program',    value: 'MJM 2026 · GBPDSA Accreditation' },
