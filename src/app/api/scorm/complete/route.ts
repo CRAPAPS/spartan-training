@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { scormCloud } from '@/lib/scormCloud';
 import { evaluateCompletion, type ScormPayload } from '@/lib/hardGate';
