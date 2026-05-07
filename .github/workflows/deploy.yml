@@ -29,6 +29,9 @@ jobs:
           file: ./Dockerfile.prod
           push: true
           tags: ghcr.io/crapaps/spartan-training/spartan-app:latest
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Deploy to KVM via SSH
         uses: appleboy/ssh-action@v1
