@@ -35,7 +35,7 @@ jobs:
         with:
           host: ${{ secrets.KVM_HOST }}
           username: ${{ secrets.KVM_USER }}
-          key: ${{ secrets.KVM_SSH_KEY }}
+          password: ${{ secrets.KVM_PASSWORD }}
           script: |
             set -e
             mkdir -p /opt/spartan-app
