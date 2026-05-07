@@ -1,0 +1,30 @@
+{
+  "name": "spartan-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 7473",
+    "build": "next build",
+    "start": "next start --port 7473",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "db:generate-types": "supabase gen types typescript --local > src/types/supabase.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.92.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.4",
+    "next": "^16.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "stripe": "^16.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.2.4",
+    "typescript": "^5"
+  }
+}

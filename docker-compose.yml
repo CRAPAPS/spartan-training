@@ -1,0 +1,36 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────
+# SPARTAN LMS — Local Development Stack
+# Prerequisites:
+#   1. Run `npx supabase start` to boot the local Supabase stack
+#      (Postgres :54321, Studio :54323, Auth :54321/auth)
+#   2. Copy .env.template → .env and fill in values from
+#      `npx supabase status`
+#   3. Run `docker compose up spartan-app`
+# ─────────────────────────────────────────────────────────────
+
+services:
+  spartan-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: spartan-app
+    ports:
+      - "7473:7473"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      SCORM_CLOUD_APP_ID: ${SCORM_CLOUD_APP_ID}
+      SCORM_CLOUD_SECRET_KEY: ${SCORM_CLOUD_SECRET_KEY}
+      SCORM_CLOUD_WEBHOOK_SECRET: ${SCORM_CLOUD_WEBHOOK_SECRET}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: http://localhost:3000
+    # host networking lets the container reach Supabase CLI on localhost:54321
+    network_mode: host

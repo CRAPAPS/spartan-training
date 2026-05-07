@@ -1,0 +1,93 @@
+name: Deploy Spartan LMS → KVM
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push production image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.prod
+          push: true
+          tags: ghcr.io/${{ github.repository }}/spartan-app:latest
+
+      - name: Deploy to KVM via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.KVM_HOST }}
+          username: ${{ secrets.KVM_USER }}
+          key: ${{ secrets.KVM_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p /opt/spartan-app
+            cd /opt/spartan-app
+
+            # Write env file — secrets injected by GitHub Actions before shell runs
+            cat > .env << 'ENVEOF'
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+            SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+            ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+            STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+            STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+            STRIPE_PRICE_ARMED_SECURITY=${{ secrets.STRIPE_PRICE_ARMED_SECURITY }}
+            STRIPE_PRICE_PI=${{ secrets.STRIPE_PRICE_PI }}
+            STRIPE_PRICE_EP=${{ secrets.STRIPE_PRICE_EP }}
+            NEXTAUTH_URL=https://spartantraining.live
+            SCORM_CLOUD_APP_ID=${{ secrets.SCORM_CLOUD_APP_ID }}
+            SCORM_CLOUD_SECRET_KEY=${{ secrets.SCORM_CLOUD_SECRET_KEY }}
+            SCORM_CLOUD_WEBHOOK_SECRET=${{ secrets.SCORM_CLOUD_WEBHOOK_SECRET }}
+            ENVEOF
+
+            # Write production compose file
+            cat > docker-compose.yml << 'COMPOSEEOF'
+            services:
+              spartan-app:
+                image: ghcr.io/${{ github.repository }}/spartan-app:latest
+                container_name: spartan-app
+                restart: always
+                ports:
+                  - "127.0.0.1:7473:7473"
+                env_file: .env
+            COMPOSEEOF
+
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/${{ github.repository }}/spartan-app:latest
+            docker compose up -d --force-recreate spartan-app
+            docker image prune -f
+
+# ─── REQUIRED GITHUB SECRETS ──────────────────────────────────────────────────
+# KVM_HOST                        — KVM IP address
+# KVM_USER                        — SSH user (root)
+# KVM_SSH_KEY                     — Private SSH key (full key including header/footer)
+# NEXT_PUBLIC_SUPABASE_URL        — https://zlblxrxirhmolkzbfxva.supabase.co
+# NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+# SUPABASE_SERVICE_ROLE_KEY
+# ANTHROPIC_API_KEY
+# STRIPE_SECRET_KEY
+# STRIPE_WEBHOOK_SECRET
+# STRIPE_PRICE_ARMED_SECURITY
+# STRIPE_PRICE_PI
+# STRIPE_PRICE_EP
+# SCORM_CLOUD_APP_ID
+# SCORM_CLOUD_SECRET_KEY
+# SCORM_CLOUD_WEBHOOK_SECRET
