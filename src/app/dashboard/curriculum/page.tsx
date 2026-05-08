@@ -115,13 +115,22 @@ export default async function CurriculumDashboardPage() {
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.12em', color: style.color, textTransform: 'uppercase' }}>
                   {style.label}
                 </span>
-                {!isLocked && (
-                  <Link href={`/dashboard/module/${moduleId}`}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--brass)', cursor: 'pointer', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
-                      START →
-                    </span>
-                  </Link>
-                )}
+                {!isLocked && (() => {
+                  const isCompetent = prog?.is_competent;
+                  const actionLabel =
+                    isCompetent               ? 'RECAP ↺'    :
+                    status === 'in_progress'  ? 'CONTINUE →' :
+                    status === 'failed' || status === 'reset' ? 'RETRY →' :
+                    'START →';
+                  const actionColor = isCompetent ? 'var(--ink-dim)' : 'var(--brass)';
+                  return (
+                    <Link href={`/dashboard/module/${moduleId}`}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: actionColor, cursor: 'pointer', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+                        {actionLabel}
+                      </span>
+                    </Link>
+                  );
+                })()}
               </div>
             </div>
           );
