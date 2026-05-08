@@ -29,60 +29,86 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
 // ── Candidate voices for security/law enforcement training ───────────────────
-// Profile required: American English, baritone, calm authority, measured pace.
-// Not academic. Not aggressive. Sounds like a seasoned field instructor.
-const CANDIDATE_VOICES = [
+// Two-voice model:
+//   PRIMARY (male)   — main slide content, legal/procedural, key points
+//   SECONDARY (female) — scenario slides, reflection prompts, callout boxes
+//
+// Profile: American English, calm authority, measured pace. Not academic.
+// Sounds like a seasoned field instructor. Equal authority between voices.
+
+const CANDIDATE_VOICES_MALE = [
   {
-    id:      'pNInz6obpgDQGcFmaJgB',
-    name:    'Adam',
-    profile: 'Deep baritone, authoritative American male. Clear diction. Slightly formal — works well for legal content.',
+    id:      'nPczCjzI2devNBz1zQrb',
+    name:    'Brian',
+    profile: 'Deep, composed American. Very measured delivery. Sounds experienced. Top pick.',
   },
   {
     id:      'TxGEqnHWrfWFTfGW9XjX',
     name:    'Josh',
-    profile: 'Deep, calm, measured American male. Natural warmth without losing authority. Strong candidate.',
-  },
-  {
-    id:      'ErXwobaYiN019PkySvjV',
-    name:    'Antoni',
-    profile: 'Well-rounded American male, conversational but professional. Less formal — approachable instructor feel.',
-  },
-  {
-    id:      'VR6AewLTigWG4xSOukaG',
-    name:    'Arnold',
-    profile: 'Crisp, confident American. Slightly faster natural pace. Works for high-energy content like use-of-force.',
-  },
-  {
-    id:      'yoZ06aMxZJJ28mfd3POQ',
-    name:    'Sam',
-    profile: 'Textured, slightly raspy American male. Very human-sounding. Grounded — good fit for tactical/field content.',
+    profile: 'Deep, calm, measured American. Natural warmth without losing authority.',
   },
   {
     id:      'cjVigY5qzO86Huf0OWal',
     name:    'Eric',
-    profile: 'Warm, conversational American. Calm and steady. Low-pressure delivery aids information retention.',
+    profile: 'Warm, conversational American. Calm and steady. Low-pressure — aids retention.',
   },
   {
     id:      'TX3LPaxmHKxFdv7VOQHJ',
     name:    'Liam',
-    profile: 'Calm, clear American. Neutral accent. Even-paced — excellent for dense legal or procedural material.',
-  },
-  {
-    id:      'bVMeCyTHy58xNoL34h3p',
-    name:    'Jeremy',
-    profile: 'American male, engaging and confident without being aggressive. Natural authority. Strong audition candidate.',
-  },
-  {
-    id:      'nPczCjzI2devNBz1zQrb',
-    name:    'Brian',
-    profile: 'Deep, composed American. Very measured delivery. Sounds experienced. Top candidate for this demographic.',
+    profile: 'Calm, clear, neutral American. Even-paced — excellent for dense legal content.',
   },
   {
     id:      'iP95p4xoKVk53GoZ742B',
     name:    'Chris',
-    profile: 'American male, steady and professional. Calm under pressure in his delivery — suits tactical content well.',
+    profile: 'Steady and professional. Calm under pressure — suits tactical content.',
+  },
+  {
+    id:      'pNInz6obpgDQGcFmaJgB',
+    name:    'Adam',
+    profile: 'Deep baritone, authoritative. Clear diction. Strong for legal/procedural slides.',
+  },
+  {
+    id:      'bVMeCyTHy58xNoL34h3p',
+    name:    'Jeremy',
+    profile: 'Confident without aggression. Natural authority. Engaging instructor feel.',
   },
 ];
+
+const CANDIDATE_VOICES_FEMALE = [
+  {
+    id:      'EXAVITQu4vr4xnSDxMaL',
+    name:    'Bella',
+    profile: 'Calm, professional American female. Clear and composed — strong for scenario delivery.',
+  },
+  {
+    id:      'ThT5KcBeYPX3keUQqHPh',
+    name:    'Dorothy',
+    profile: 'Warm but authoritative American female. Grounded delivery. Good for reflection prompts.',
+  },
+  {
+    id:      'oWAxZDx7w5VEj9dCyTzz',
+    name:    'Grace',
+    profile: 'Confident, measured American female. Professional tone. Suits procedural content.',
+  },
+  {
+    id:      'z9fAnlkpzviPz146aGWa',
+    name:    'Glinda',
+    profile: 'Clear, calm American female. Neutral accent. Strong articulation for technical terms.',
+  },
+  {
+    id:      'XB0fDUnXU5powFXDhCwa',
+    name:    'Charlotte',
+    profile: 'American female, direct and warm. Calm authority without softness. Top pick.',
+  },
+  {
+    id:      'pFZP5JQG7iQjIQuC4Bku',
+    name:    'Lily',
+    profile: 'Clear, composed American female. Even pace. Works well for callout and warning content.',
+  },
+];
+
+// Combined for backward compat
+const CANDIDATE_VOICES = [...CANDIDATE_VOICES_MALE, ...CANDIDATE_VOICES_FEMALE];
 
 // Audition test script — same text every voice reads so comparison is fair
 const AUDITION_TEXT =
@@ -257,51 +283,56 @@ async function checkQuota(apiKey) {
 // ── Audition mode ────────────────────────────────────────────────────────────
 async function runAudition(apiKey, speed) {
   const outDir = resolve(__dirname, 'audition');
-  mkdirSync(outDir, { recursive: true });
+  mkdirSync(resolve(outDir, 'male'),   { recursive: true });
+  mkdirSync(resolve(outDir, 'female'), { recursive: true });
 
-  console.log('\n── VOICE AUDITION ──────────────────────────────────────────');
-  console.log(`Text (~${AUDITION_TEXT.length} chars per voice):\n`);
-  console.log(`"${AUDITION_TEXT}"\n`);
-  console.log(`Generating ${CANDIDATE_VOICES.length} clips to: scripts/audition/\n`);
-
+  const allVoices = CANDIDATE_VOICES;
   const quota = await checkQuota(apiKey);
   if (quota) {
-    const cost = CANDIDATE_VOICES.length * AUDITION_TEXT.length;
-    console.log(`Quota: ${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()} used`);
-    console.log(`This audition will use ~${cost} chars (${quota.remaining.toLocaleString()} remaining)\n`);
+    const cost = allVoices.length * AUDITION_TEXT.length;
+    console.log(`\nElevenLabs quota: ${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()} used`);
+    console.log(`Audition will use ~${cost} chars (${quota.remaining.toLocaleString()} remaining)\n`);
     if (quota.remaining < cost) {
-      console.error('Insufficient quota for full audition. Run with fewer candidates or wait for quota reset.');
+      console.error('Insufficient quota. Use --slides with 1-2 voices, or wait for monthly quota reset.');
       process.exit(1);
     }
   }
 
-  for (const voice of CANDIDATE_VOICES) {
-    process.stdout.write(`  ${voice.name.padEnd(10)} ${voice.profile.slice(0, 55)}… `);
+  console.log('── MALE VOICES (primary — main slide content) ──────────────');
+  for (const voice of CANDIDATE_VOICES_MALE) {
+    process.stdout.write(`  ${voice.name.padEnd(12)} ${voice.profile.slice(0, 52)}… `);
     try {
       const audio = await synthesize(AUDITION_TEXT, { apiKey, voiceId: voice.id, speed });
-      const outPath = resolve(outDir, `${voice.name.toLowerCase()}.mp3`);
-      writeFileSync(outPath, audio);
-      console.log(`✓ (${(audio.length / 1024).toFixed(0)} KB)`);
-    } catch (e) {
-      console.log(`✗ ${e.message}`);
-    }
+      writeFileSync(resolve(outDir, 'male', `${voice.name.toLowerCase()}.mp3`), audio);
+      console.log(`✓ ${(audio.length / 1024).toFixed(0)}KB`);
+    } catch (e) { console.log(`✗ ${e.message}`); }
     await new Promise(r => setTimeout(r, 600));
   }
 
-  console.log('\n── RESULTS ─────────────────────────────────────────────────');
-  console.log('Open scripts/audition/ and listen to each file.');
-  console.log('Then set your chosen voice in .env.local:\n');
-  console.log('  ELEVENLABS_VOICE_ID=<id from list below>\n');
-
-  for (const v of CANDIDATE_VOICES) {
-    console.log(`  ${v.name.padEnd(10)} ${v.id}   ${v.profile}`);
+  console.log('\n── FEMALE VOICES (secondary — scenarios, reflections, callouts) ──');
+  for (const voice of CANDIDATE_VOICES_FEMALE) {
+    process.stdout.write(`  ${voice.name.padEnd(12)} ${voice.profile.slice(0, 52)}… `);
+    try {
+      const audio = await synthesize(AUDITION_TEXT, { apiKey, voiceId: voice.id, speed });
+      writeFileSync(resolve(outDir, 'female', `${voice.name.toLowerCase()}.mp3`), audio);
+      console.log(`✓ ${(audio.length / 1024).toFixed(0)}KB`);
+    } catch (e) { console.log(`✗ ${e.message}`); }
+    await new Promise(r => setTimeout(r, 600));
   }
 
-  console.log('\nTop picks for armed security training:');
-  console.log('  Brian  — deep, composed, very measured. Sounds experienced.');
-  console.log('  Josh   — calm, natural warmth with authority.');
-  console.log('  Liam   — neutral, even-paced, excellent for dense legal content.');
-  console.log('  Eric   — calm and steady, low-pressure delivery aids retention.\n');
+  console.log('\n── NEXT STEPS ───────────────────────────────────────────────');
+  console.log('Listen to scripts/audition/male/ and scripts/audition/female/');
+  console.log('Then add your chosen pair to .env.local:\n');
+  console.log('  ELEVENLABS_VOICE_ID=<male voice id>');
+  console.log('  ELEVENLABS_VOICE_ID_SECONDARY=<female voice id>\n');
+  console.log('Male top picks:   Brian, Josh, Liam, Eric');
+  console.log('Female top picks: Charlotte, Grace, Dorothy\n');
+
+  console.log('Voice IDs reference:');
+  for (const v of allVoices) {
+    console.log(`  ${v.name.padEnd(12)} ${v.id}`);
+  }
+  console.log('');
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
@@ -322,8 +353,15 @@ async function main() {
     return;
   }
 
-  const voiceId = args.voice ?? env.ELEVENLABS_VOICE_ID ?? 'nPczCjzI2devNBz1zQrb'; // Brian default
-  const speed   = args.speed;
+  // Primary (male) — slide, checklist, video slides
+  // Secondary (female) — scenario, reflection, callout-heavy slides
+  const voicePrimary   = args.voice   ?? env.ELEVENLABS_VOICE_ID           ?? 'nPczCjzI2devNBz1zQrb'; // Brian
+  const voiceSecondary =                 env.ELEVENLABS_VOICE_ID_SECONDARY  ?? 'XB0fDUnXU5powFXDhCwa'; // Charlotte
+  const speed = args.speed;
+
+  // Which voice to use per slide type
+  const voiceForSlide = (slide) =>
+    slide.type === 'scenario' ? voiceSecondary : voicePrimary;
 
   const quota = await checkQuota(apiKey);
   if (quota) {
@@ -373,11 +411,13 @@ async function main() {
         continue;
       }
 
+      const voice = voiceForSlide(slide);
+      const voiceTag = voice === voiceSecondary ? '[F]' : '[M]';
       try {
-        const audio = await synthesize(text, { apiKey, voiceId, speed });
+        const audio = await synthesize(text, { apiKey, voiceId: voice, speed });
         const url   = await uploadAudio(supabaseUrl, serviceKey, `${moduleId}/${idx}.mp3`, audio);
         updatedSlides[idx] = { ...slide, narrationUrl: url };
-        console.log(`        ✓ ${(audio.length / 1024).toFixed(1)} KB → Storage`);
+        console.log(`        ✓ ${voiceTag} ${(audio.length / 1024).toFixed(1)} KB → Storage`);
       } catch (e) {
         console.error(`        ✗ ${e.message}`);
       }
