@@ -27,28 +27,10 @@ const MAK_SPECIALIZATIONS = [
   'Military Weapons Instruction',
 ] as const;
 
-const SEARRA_CREDENTIALS = [
-  { code: 'PhD',      label: 'Doctor of Philosophy — Intelligence & Telecommunications' },
-  { code: 'TSCM',    label: 'Technical Surveillance Countermeasures Specialist' },
-  { code: 'GA-PI',   label: 'Licensed Private Investigator' },
-  { code: 'EXTRAD',  label: 'Extradition Agent — 30+ U.S. States' },
-  { code: 'INT-OPS', label: 'Intelligence Operations — 3 Continents, Multi-Agency Coordination' },
-] as const;
-
-const SEARRA_SPECIALIZATIONS = [
-  'Counterintelligence Operations',
-  'Technical Surveillance Countermeasures (TSCM)',
-  'Complex Surveillance Operations',
-  'Intelligence Program Integration',
-  'Virtual Private Investigation',
-  'Advanced Counter-Surveillance',
-  'Multi-lingual Operational Intelligence',
-  'Geopolitical Risk & Analysis',
-] as const;
 
 const KUHN_CREDENTIALS = [
   { code: 'CySA+',    label: 'CompTIA Cybersecurity Analyst — Complete' },
-  { code: 'SOC-24/7', label: 'Security Operations Centre Director — SHEL INFOSEC' },
+  { code: 'SOC-24/7', label: 'Security Operations Centre Director' },
   { code: 'SIEM',     label: 'SIEM Systems, Endpoint Security & Cloud Infrastructure' },
   { code: 'SILENT',   label: 'SILENT EDGE — Military-Grade RMM Platform (Founder)' },
   { code: 'GDPR',     label: 'POPI Act, GDPR, PCI DSS Compliance Operations' },
@@ -178,68 +160,6 @@ export default function FacultyPage() {
         {/* Divider */}
         <Rule style={{ marginBottom: '64px' }} />
 
-        {/* Dr. Tristan Searra */}
-        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '48px', marginBottom: '64px' }}>
-
-          {/* Photo + credentials */}
-          <div>
-            <PhotoPlaceholder width="100%" height="380px" caption="DR. SEARRA — PHOTOGRAPHY PENDING" />
-            <div style={{ marginTop: '16px', padding: '16px', border: '1px solid var(--border)', background: 'var(--bg-elev-1)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {SEARRA_CREDENTIALS.map(c => (
-                <div key={c.code} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em', color: 'var(--brass)', fontWeight: 600, minWidth: '72px', paddingTop: '2px' }}>{c.code}</span>
-                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--ink-dim)', lineHeight: 1.5 }}>{c.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bio */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            <div>
-              <MonoLabel dot dotColor="var(--success)" style={{ marginBottom: '12px' }}>Director of Intelligence · Partner Faculty</MonoLabel>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>
-                Dr. Tristan Searra
-              </h2>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--brass)', letterSpacing: '0.12em', margin: 0 }}>
-                DIRECTOR OF INTELLIGENCE · FOUNDER &amp; CEO, THINKVP
-              </p>
-            </div>
-
-            <Rule />
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                Dr. Searra holds a PhD and brings over a decade of specialized experience in Telecommunications and Technical Surveillance Countermeasures (TSCM). As Director of Intelligence, he leads the integration and orchestration of intelligence programs across multiple operations — ensuring strategic objectives are executed with precision and operational excellence.
-              </p>
-              <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                Dr. Searra has worked closely with local and international police departments and government agencies across three continents, managing intelligence workflows and delivering counterintelligence and complex surveillance operations. Fluent in multiple languages and certified as an extradition agent in more than 30 U.S. states, his operational reach is genuinely global.
-              </p>
-              <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                As Founder and CEO of ThiinkVP, Dr. Searra provides virtual private investigation solutions and advanced counter-surveillance services — blending cutting-edge technology with strategic intelligence to build the collaborative intelligence community operators need to sustain resilience in high-risk environments.
-              </p>
-            </div>
-
-            <Rule />
-
-            <div>
-              <MonoLabel style={{ marginBottom: '16px', display: 'block' }}>Areas of Instruction</MonoLabel>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {SEARRA_SPECIALIZATIONS.map(s => (
-                  <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '4px', height: '4px', background: 'var(--brass)', flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)' }}>{s}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Divider */}
-        <Rule style={{ marginBottom: '64px' }} />
-
         {/* Sheldon Kuhn */}
         <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '48px', marginBottom: '64px' }}>
 
@@ -262,7 +182,7 @@ export default function FacultyPage() {
                 Sheldon L. Kuhn
               </h2>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--brass)', letterSpacing: '0.12em', margin: 0 }}>
-                CISO · DIRECTOR OF CYBER INTELLIGENCE · FOUNDER, SHEL INFOSEC
+                CISO · DIRECTOR OF CYBER INTELLIGENCE · SPARTAN TRAINING LLC
               </p>
             </div>
 
@@ -270,10 +190,10 @@ export default function FacultyPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                Sheldon Kuhn is a seasoned cybersecurity expert, CompTIA CySA+ certified, and the founding CISO behind SHEL INFOSEC — the intelligence and security firm driving the Spartan Training platform. He leads mission-critical cyber intelligence and defence operations for enterprise and government clients across SMB, nonprofit, and regulated industries.
+                Sheldon Kuhn is a seasoned cybersecurity expert and CompTIA CySA+ certified professional serving as CISO and Director of Cyber Intelligence for Spartan Training LLC. He leads mission-critical cyber intelligence and defence operations for enterprise and government clients across SMB, nonprofit, and regulated industries.
               </p>
               <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                Under his leadership, SHEL INFOSEC developed <strong style={{ color: 'var(--ink)' }}>SILENT EDGE</strong> — a Military-Grade remote monitoring and management (RMM) platform featuring AI-driven threat detection, automated incident response, compliance reporting, and endpoint protection. His expertise spans SIEM systems, cloud and premise-based security architecture, and cyber threat intelligence programs aligned to GDPR, POPI Act, and PCI DSS compliance frameworks.
+                He is the architect of <strong style={{ color: 'var(--ink)' }}>SILENT EDGE</strong> — a Military-Grade remote monitoring and management (RMM) platform featuring AI-driven threat detection, automated incident response, compliance reporting, and endpoint protection. His expertise spans SIEM systems, cloud and premise-based security architecture, and cyber threat intelligence programs aligned to GDPR, POPI Act, and PCI DSS compliance frameworks.
               </p>
               <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
                 Sheldon applies his deep technical background and operational mindset to the Spartan Training Cyber Awareness module — equipping field operators with the foundational digital security disciplines needed in modern armed security and private investigation operations.
@@ -299,7 +219,7 @@ export default function FacultyPage() {
       </main>
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MonoLabel size="xs">SHEL INFOSEC · SPARTAN TRAINING · MJM 2026</MonoLabel>
+        <MonoLabel size="xs">SPARTAN TRAINING LLC · MJM 2026</MonoLabel>
         <MonoLabel size="xs">Georgia PDSC001719 · CFTR001295 · PDSG044581</MonoLabel>
       </footer>
     </div>

@@ -168,7 +168,7 @@ export default function CurriculumPage() {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MonoLabel size="xs">SHEL INFOSEC · SPARTAN TRAINING · MJM 2026</MonoLabel>
+        <MonoLabel size="xs">SPARTAN TRAINING LLC · MJM 2026</MonoLabel>
         <MonoLabel size="xs">Georgia PDSC001719 · CFTR001295</MonoLabel>
       </footer>
     </div>

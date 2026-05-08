@@ -41,7 +41,7 @@ export default function ContactPage() {
       <main style={{ flex: 1, padding: '64px 56px' }}>
 
         <div style={{ marginBottom: '48px' }}>
-          <MonoLabel style={{ marginBottom: '16px' }}>SHEL INFOSEC · Spartan Training</MonoLabel>
+          <MonoLabel style={{ marginBottom: '16px' }}>SPARTAN TRAINING LLC</MonoLabel>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '48px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.0 }}>
             Contact
           </h1>
@@ -131,7 +131,7 @@ export default function ContactPage() {
       </main>
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MonoLabel size="xs">SHEL INFOSEC · SPARTAN TRAINING · MJM 2026</MonoLabel>
+        <MonoLabel size="xs">SPARTAN TRAINING LLC · MJM 2026</MonoLabel>
         <MonoLabel size="xs">Georgia PDSC001719 · CFTR001295</MonoLabel>
       </footer>
     </div>

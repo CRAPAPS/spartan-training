@@ -55,7 +55,7 @@ export default function AboutPage() {
       <main style={{ flex: 1, padding: '64px 56px', maxWidth: '960px' }}>
 
         <div style={{ marginBottom: '48px' }}>
-          <MonoLabel style={{ marginBottom: '16px' }}>SHEL INFOSEC · MJM 2026</MonoLabel>
+          <MonoLabel style={{ marginBottom: '16px' }}>SPARTAN TRAINING LLC · MJM 2026</MonoLabel>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '48px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.0, marginBottom: '24px' }}>
             The Standard for<br />
             <em style={{ fontStyle: 'normal', background: 'linear-gradient(90deg, var(--brass-light), var(--brass))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
@@ -63,7 +63,7 @@ export default function AboutPage() {
             </em>
           </h1>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: '16px', color: 'var(--ink-dim)', maxWidth: '600px', lineHeight: 1.8 }}>
-            Spartan Training is the accreditation division of SHEL INFOSEC — a Georgia-licensed private detective and security firm operating under PDSC001719.
+            Spartan Training LLC is an independent Georgia-licensed security training company operating under PDSC001719 — built to set a new standard for armed security accreditation in the state.
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export default function AboutPage() {
       </main>
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MonoLabel size="xs">SHEL INFOSEC · SPARTAN TRAINING · MJM 2026</MonoLabel>
+        <MonoLabel size="xs">SPARTAN TRAINING LLC · MJM 2026</MonoLabel>
         <MonoLabel size="xs">Georgia PDSC001719 · CFTR001295</MonoLabel>
       </footer>
     </div>
