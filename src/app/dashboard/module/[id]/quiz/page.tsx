@@ -1,9 +1,21 @@
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { QuizClient } from '@/components/quiz/QuizClient';
+import { CooldownScreen } from '@/components/quiz/CooldownScreen';
+import { MonoLabel } from '@/components/primitives/MonoLabel';
+import type { ShuffledQuestion, ShuffledOption } from '@/types/quiz';
 
 interface QuizPageProps {
   params: Promise<{ id: string }>;
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 export default async function ModuleQuizPage({ params }: QuizPageProps) {
@@ -13,28 +25,68 @@ export default async function ModuleQuizPage({ params }: QuizPageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/sign-in');
 
-  // RLS hard gate — operator can only access module if prior module is complete
-  const { data: module } = await supabase
+  // Use admin client — publishable key breaks PostgREST queries
+  const { data: module } = await supabaseAdmin
     .from('mjm_modules')
-    .select('id, title, passing_score, description')
+    .select('id, title, passing_score, sequence_order, is_active')
     .eq('id', id)
     .single();
 
-  if (!module) redirect('/dashboard?gate=blocked');
+  if (!module || !module.is_active) redirect('/dashboard?gate=blocked');
 
-  // Fetch questions (no correct answers — service role but answers stripped server-side)
-  const { data: questions } = await supabaseAdmin
+  // Application-level sequential gate (mirrors module page gate)
+  const { data: operatorRow } = await supabaseAdmin
+    .from('operators').select('role').eq('id', user.id).single();
+  const role = (operatorRow as { role?: string } | null)?.role ?? 'agent';
+  const isPrivileged = role === 'admin' || role === 'coordinator' || role === 'super_admin';
+
+  if (!isPrivileged && module.sequence_order > 1) {
+    const { data: prevProgress } = await supabaseAdmin
+      .from('operator_progress')
+      .select('is_competent')
+      .eq('operator_id', user.id)
+      .eq('module_id', `MOD-${String(module.sequence_order - 1).padStart(2, '0')}`)
+      .single();
+    if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
+  }
+
+  // 24-hour cooldown: check for a recent critical fail on this module
+  const { data: lastCritFail } = await supabaseAdmin
+    .from('quiz_sessions')
+    .select('submitted_at')
+    .eq('operator_id', user.id)
+    .eq('module_id', id)
+    .eq('critical_fail', true)
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastCritFail?.submitted_at) {
+    const cooldownUntil = new Date(lastCritFail.submitted_at).getTime() + 24 * 60 * 60 * 1000;
+    if (Date.now() < cooldownUntil) {
+      return (
+        <div style={{ padding: '40px 48px' }}>
+          <CooldownScreen
+            moduleId={id}
+            moduleTitle={module.title}
+            cooldownUntil={new Date(cooldownUntil).toISOString()}
+          />
+        </div>
+      );
+    }
+  }
+
+  // Fetch raw questions (correct answers excluded — graded server-side)
+  const { data: rawQuestions } = await supabaseAdmin
     .from('quiz_questions')
     .select('id, sequence, question, option_a, option_b, option_c, option_d, is_critical, topic')
     .eq('module_id', id)
     .order('sequence');
 
-  if (!questions?.length) {
+  if (!rawQuestions?.length) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', flexDirection: 'column', gap: '12px' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
-          No questions available for {id}
-        </span>
+        <MonoLabel>No questions available for {id}</MonoLabel>
         <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)' }}>
           This module&apos;s assessment is pending content upload.
         </span>
@@ -42,13 +94,51 @@ export default async function ModuleQuizPage({ params }: QuizPageProps) {
     );
   }
 
+  // Attempt number (for display)
+  const { data: progress } = await supabaseAdmin
+    .from('operator_progress')
+    .select('attempts')
+    .eq('operator_id', user.id)
+    .eq('module_id', id)
+    .maybeSingle();
+  const attemptNumber = ((progress as { attempts?: number } | null)?.attempts ?? 0) + 1;
+
+  // Server-side Fisher-Yates shuffle of question order AND option order within each question
+  const shuffledQuestions: ShuffledQuestion[] = shuffle(
+    (rawQuestions as Array<{
+      id: string; sequence: number; question: string;
+      option_a: string; option_b: string; option_c: string; option_d: string;
+      is_critical: boolean; topic: string;
+    }>)
+  ).map(q => {
+    const shuffledOpts = shuffle<{ originalKey: string; text: string }>([
+      { originalKey: 'A', text: q.option_a },
+      { originalKey: 'B', text: q.option_b },
+      { originalKey: 'C', text: q.option_c },
+      { originalKey: 'D', text: q.option_d },
+    ]);
+    const LABELS = ['A', 'B', 'C', 'D'];
+    return {
+      id: q.id,
+      question: q.question,
+      is_critical: q.is_critical,
+      topic: q.topic,
+      options: shuffledOpts.map((o, i): ShuffledOption => ({
+        label: LABELS[i],
+        text: o.text,
+        originalKey: o.originalKey,
+      })),
+    };
+  });
+
   return (
     <div style={{ padding: '40px 48px' }}>
       <QuizClient
         moduleId={id}
         moduleTitle={module.title}
         passingScore={module.passing_score ?? 80}
-        questions={questions}
+        questions={shuffledQuestions}
+        attemptNumber={attemptNumber}
       />
     </div>
   );
