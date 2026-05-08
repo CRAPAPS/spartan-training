@@ -82,16 +82,40 @@ export function Sidebar({ role = 'agent', isOpen = false }: SidebarProps) {
       </nav>
 
       <Rule />
+
+      {/* Public site links */}
+      <div style={{ padding: '12px 0 4px' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase', padding: '0 20px', display: 'block', marginBottom: '4px' }}>
+          Public Site
+        </span>
+        {[
+          { label: 'Home',       href: '/' },
+          { label: 'Curriculum', href: '/curriculum' },
+          { label: 'Faculty',    href: '/faculty' },
+          { label: 'About',      href: '/about' },
+          { label: 'Contact',    href: '/contact' },
+        ].map(item => (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '7px 20px',
+              textDecoration: 'none',
+              color: 'var(--ink-mute)',
+            }}
+          >
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.12em', color: 'var(--ink-mute)' }}>↗</span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--ink-mute)', letterSpacing: '0.04em' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <Rule />
       <div style={{ padding: '16px 20px' }}>
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '9px',
-            letterSpacing: '0.18em',
-            color: 'var(--ink-mute)',
-            textTransform: 'uppercase',
-          }}
-        >
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
           MJM 2026 · GBPDSA
         </span>
       </div>
