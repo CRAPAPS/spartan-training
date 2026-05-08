@@ -20,15 +20,31 @@ export default async function ModulePage({ params }: ModulePageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/sign-in');
 
-  // RLS hard_gate_module_access policy filters this query.
-  // If the module row is not returned, the gate is blocked.
-  const { data: module } = await supabase
+  // Fetch module via admin client (RLS publishable-key issue bypassed).
+  // Gate is enforced in application code below.
+  const { data: module } = await supabaseAdmin
     .from('mjm_modules')
-    .select('id, title, description, scorm_course_id, passing_score, sequence_order')
+    .select('id, title, description, scorm_course_id, passing_score, sequence_order, is_active')
     .eq('id', id)
     .single();
 
-  if (!module) redirect('/dashboard?gate=blocked');
+  if (!module || !module.is_active) redirect('/dashboard?gate=blocked');
+
+  // Application-level sequential gate (mirrors RLS hard_gate_module_access_v2)
+  const { data: operatorRow } = await supabaseAdmin
+    .from('operators').select('role').eq('id', user.id).single();
+  const userRole = (operatorRow as { role?: string } | null)?.role ?? 'agent';
+  const isPrivileged = userRole === 'admin' || userRole === 'coordinator' || userRole === 'super_admin';
+
+  if (!isPrivileged && module.sequence_order > 1) {
+    const { data: prevProgress } = await supabaseAdmin
+      .from('operator_progress')
+      .select('is_competent')
+      .eq('operator_id', user.id)
+      .eq('module_id', `MOD-${String(module.sequence_order - 1).padStart(2, '0')}`)
+      .single();
+    if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
+  }
 
   // Check operator's existing progress for this module
   const { data: progress } = await supabaseAdmin

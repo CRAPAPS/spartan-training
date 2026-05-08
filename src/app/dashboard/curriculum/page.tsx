@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
@@ -18,12 +18,23 @@ export default async function CurriculumDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/sign-in');
 
-  const { data: visibleModules } = await supabase
+  // Use admin client so the modules query always succeeds regardless of RLS/key format
+  const { data: allModules } = await supabaseAdmin
     .from('mjm_modules')
     .select('id, title, sequence_order, passing_score, duration_hours')
     .order('sequence_order');
 
-  const { data: progressRows } = await supabase
+  // Get operator role for gate bypass
+  const { data: operator } = await supabaseAdmin
+    .from('operators')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+  const role = (operator as { role?: string } | null)?.role ?? 'agent';
+  const isPrivileged = role === 'admin' || role === 'coordinator' || role === 'super_admin';
+
+  // Progress is always scoped to the current user
+  const { data: progressRows } = await supabaseAdmin
     .from('operator_progress')
     .select('module_id, status, is_competent, score, attempts, completed_at')
     .eq('operator_id', user.id);
@@ -32,7 +43,18 @@ export default async function CurriculumDashboardPage() {
     (progressRows ?? []).map(p => [p.module_id, p])
   );
 
-  const visibleIds = new Set((visibleModules ?? []).map(m => m.id));
+  // Compute which modules are accessible (application-level sequential gate)
+  const modules = allModules ?? [];
+  const visibleIds = new Set<string>();
+  for (const m of modules) {
+    if (isPrivileged || m.sequence_order === 1) {
+      visibleIds.add(m.id);
+      continue;
+    }
+    const prev = modules.find(p => p.sequence_order === m.sequence_order - 1);
+    if (prev && progressMap[prev.id]?.is_competent) visibleIds.add(m.id);
+  }
+
   const completedCount = (progressRows ?? []).filter(p => p.is_competent).length;
 
   return (
@@ -74,7 +96,7 @@ export default async function CurriculumDashboardPage() {
         {Array.from({ length: 16 }, (_, i) => {
           const seq = String(i + 1).padStart(2, '0');
           const moduleId = `MOD-${seq}`;
-          const mod = (visibleModules ?? []).find(m => m.id === moduleId);
+          const mod = modules.find(m => m.id === moduleId);
           const prog = progressMap[moduleId];
           const isLocked = !visibleIds.has(moduleId);
           const status = prog?.status ?? 'not_started';

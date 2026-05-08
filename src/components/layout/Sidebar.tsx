@@ -15,7 +15,10 @@ const NAV_ITEMS = [
   { key: 'SET', label: 'Settings',    href: '/dashboard/settings' },
 ] as const;
 
-const ADMIN_ITEM = { key: 'ADM', label: 'Admin Panel', href: '/dashboard/admin' };
+const ADMIN_ITEMS = [
+  { key: 'ADM', label: 'Admin Panel',    href: '/dashboard/admin' },
+  { key: 'CRS', label: 'Course Content', href: '/dashboard/admin/content' },
+];
 
 interface SidebarProps {
   role?: string;
@@ -25,7 +28,7 @@ interface SidebarProps {
 export function Sidebar({ role = 'agent', isOpen = false }: SidebarProps) {
   const pathname = usePathname();
   const isAdmin = role === 'admin' || role === 'coordinator' || role === 'super_admin';
-  const allItems = isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS;
+  const allItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_ITEMS] : NAV_ITEMS;
 
   return (
     <aside className={`sidebar${isOpen ? ' open' : ''}`}>

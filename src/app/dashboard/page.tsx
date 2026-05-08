@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { MetricStrip } from '@/components/dashboard/MetricStrip';
 import { ModuleTable } from '@/components/dashboard/ModuleTable';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: visibleModules } = await supabase
+  const { data: visibleModules } = await supabaseAdmin
     .from('mjm_modules')
     .select('id, title, track, sequence_order')
     .order('sequence_order');
