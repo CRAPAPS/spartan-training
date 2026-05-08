@@ -353,15 +353,23 @@ async function main() {
     return;
   }
 
-  // Primary (male) — slide, checklist, video slides
-  // Secondary (female) — scenario, reflection, callout-heavy slides
-  const voicePrimary   = args.voice   ?? env.ELEVENLABS_VOICE_ID           ?? 'nPczCjzI2devNBz1zQrb'; // Brian
-  const voiceSecondary =                 env.ELEVENLABS_VOICE_ID_SECONDARY  ?? 'XB0fDUnXU5powFXDhCwa'; // Charlotte
+  // Eric    (primary)   — slide + video  — warm, conversational, most of the content
+  // Bella   (secondary) — scenario       — calm authority for tactical scenarios & reflections
+  // Brian   (tertiary)  — checklist      — deep, measured delivery suits procedural lists
+  const voiceEric  = args.voice ?? env.ELEVENLABS_VOICE_ID           ?? 'cjVigY5qzO86Huf0OWal';
+  const voiceBella =               env.ELEVENLABS_VOICE_ID_SECONDARY  ?? 'EXAVITQu4vr4xnSDxMaL';
+  const voiceBrian =               env.ELEVENLABS_VOICE_ID_TERTIARY   ?? 'nPczCjzI2devNBz1zQrb';
   const speed = args.speed;
 
-  // Which voice to use per slide type
-  const voiceForSlide = (slide) =>
-    slide.type === 'scenario' ? voiceSecondary : voicePrimary;
+  const voiceForSlide = (slide) => {
+    if (slide.type === 'scenario')  return voiceBella;
+    if (slide.type === 'checklist') return voiceBrian;
+    return voiceEric;
+  };
+
+  const voiceLabel = (voice) =>
+    voice === voiceBella ? '[Bella]' :
+    voice === voiceBrian ? '[Brian]' : '[Eric] ';
 
   const quota = await checkQuota(apiKey);
   if (quota) {
@@ -412,12 +420,11 @@ async function main() {
       }
 
       const voice = voiceForSlide(slide);
-      const voiceTag = voice === voiceSecondary ? '[F]' : '[M]';
       try {
         const audio = await synthesize(text, { apiKey, voiceId: voice, speed });
         const url   = await uploadAudio(supabaseUrl, serviceKey, `${moduleId}/${idx}.mp3`, audio);
         updatedSlides[idx] = { ...slide, narrationUrl: url };
-        console.log(`        ✓ ${voiceTag} ${(audio.length / 1024).toFixed(1)} KB → Storage`);
+        console.log(`        ✓ ${voiceLabel(voice)} ${(audio.length / 1024).toFixed(1)} KB → Storage`);
       } catch (e) {
         console.error(`        ✗ ${e.message}`);
       }
