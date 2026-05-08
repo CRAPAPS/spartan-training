@@ -177,26 +177,23 @@ export default function FacultyPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
             <div>
-              <MonoLabel dot dotColor="var(--success)" style={{ marginBottom: '12px' }}>CISO · Cyber Intelligence · Founding Faculty</MonoLabel>
+              <MonoLabel dot dotColor="var(--success)" style={{ marginBottom: '12px' }}>Cyber Intelligence · Technical Contributor</MonoLabel>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>
                 Sheldon L. Kuhn
               </h2>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--brass)', letterSpacing: '0.12em', margin: 0 }}>
-                CISO · DIRECTOR OF CYBER INTELLIGENCE · SPARTAN TRAINING LLC
-              </p>
             </div>
 
             <Rule />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                Sheldon Kuhn is a seasoned cybersecurity expert and CompTIA CySA+ certified professional serving as CISO and Director of Cyber Intelligence for Spartan Training LLC. He leads mission-critical cyber intelligence and defence operations for enterprise and government clients across SMB, nonprofit, and regulated industries.
+                Sheldon Kuhn is a seasoned cybersecurity expert and CompTIA CySA+ certified professional. He leads mission-critical cyber intelligence and defence operations for enterprise and government clients across SMB, nonprofit, and regulated industries.
               </p>
               <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
                 He is the architect of <strong style={{ color: 'var(--ink)' }}>SILENT EDGE</strong> — a Military-Grade remote monitoring and management (RMM) platform featuring AI-driven threat detection, automated incident response, compliance reporting, and endpoint protection. His expertise spans SIEM systems, cloud and premise-based security architecture, and cyber threat intelligence programs aligned to GDPR, POPI Act, and PCI DSS compliance frameworks.
               </p>
               <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink-dim)', lineHeight: 1.8, margin: 0 }}>
-                Sheldon applies his deep technical background and operational mindset to the Spartan Training Cyber Awareness module — equipping field operators with the foundational digital security disciplines needed in modern armed security and private investigation operations.
+                His technical background spans the intersection of cybersecurity operations and physical security environments — an increasingly critical discipline as modern armed security and investigation work moves into digital terrain.
               </p>
             </div>
 
