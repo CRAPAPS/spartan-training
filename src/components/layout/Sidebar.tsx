@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { key: 'LIB', label: 'Library',     href: '/dashboard/library' },
   { key: 'REC', label: 'Records',     href: '/dashboard/records' },
   { key: 'EXM', label: 'Exams',       href: '/dashboard/exams' },
+  { key: 'LDR', label: 'Leaderboard', href: '/dashboard/leaderboard' },
   { key: 'CRD', label: 'Credentials', href: '/dashboard/credentials' },
   { key: 'SET', label: 'Settings',    href: '/dashboard/settings' },
 ] as const;
