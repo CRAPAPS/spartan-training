@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { BrassButton } from '@/components/primitives/BrassButton';
-import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { SlideContent } from './SlideContent';
 import type { Slide } from '@/types/lesson';
 
@@ -18,14 +17,83 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
   const [current, setCurrent] = useState(
     Math.max(0, Math.min(initialSlide, slides.length - 1))
   );
-  const [saving, setSaving] = useState(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saving, setSaving]           = useState(false);
+  const [narrating, setNarrating]     = useState(false);
+  const [narrationPaused, setPaused]  = useState(false);
+  const [dwellReady, setDwellReady]   = useState(false);
+
+  const saveTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioRef      = useRef<HTMLAudioElement | null>(null);
 
   const isFirst = current === 0;
   const isLast  = current === slides.length - 1;
   const pct     = slides.length > 1 ? (current / (slides.length - 1)) * 100 : 100;
 
-  // Debounced auto-save — fires 1500ms after last slide change
+  const currentSlide    = slides[current];
+  const narrationUrl    = currentSlide.narrationUrl;
+  // Video slides handle their own audio — suppress narration unless no video src
+  const suppressNarration =
+    currentSlide.type === 'video' && !!(currentSlide as { src?: string }).src;
+
+  // ── Dwell timer — 20s minimum per slide ─────────────────────────────────
+  useEffect(() => {
+    setDwellReady(false);
+    if (dwellTimerRef.current) clearTimeout(dwellTimerRef.current);
+    dwellTimerRef.current = setTimeout(() => setDwellReady(true), 20_000);
+    return () => {
+      if (dwellTimerRef.current) clearTimeout(dwellTimerRef.current);
+    };
+  }, [current]);
+
+  // ── Narration — auto-play on slide change ────────────────────────────────
+  useEffect(() => {
+    if (!audioRef.current) audioRef.current = new Audio();
+    const audio = audioRef.current;
+
+    // Stop any previous narration
+    audio.pause();
+    audio.src = '';
+    setNarrating(false);
+    setPaused(false);
+
+    if (!narrationUrl || suppressNarration) return;
+
+    audio.src = narrationUrl;
+    audio.load();
+
+    const onPlay  = () => { setNarrating(true); setPaused(false); };
+    const onPause = () => { setPaused(true); };
+    const onEnded = () => { setNarrating(false); setPaused(false); setDwellReady(true); };
+    const onError = () => { setNarrating(false); };
+
+    audio.addEventListener('play',  onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('ended', onEnded);
+    audio.addEventListener('error', onError);
+
+    // Browsers require user gesture before autoplay — attempt it, fail silently
+    audio.play().catch(() => {});
+
+    return () => {
+      audio.removeEventListener('play',  onPlay);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('error', onError);
+    };
+  }, [current, narrationUrl, suppressNarration]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    };
+  }, []);
+
+  // ── Debounced auto-save — 1500ms after last slide change ─────────────────
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
@@ -37,24 +105,44 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
           body: JSON.stringify({ currentSlide: current, totalSlides: slides.length }),
         });
       } catch {
-        // Non-blocking — slide position is best-effort
+        // Non-blocking
       } finally {
         setSaving(false);
       }
     }, 1500);
-
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, [current, moduleId, slides.length]);
 
-  const handlePrev = useCallback(() => setCurrent(c => Math.max(0, c - 1)), []);
-  const handleNext = useCallback(() => setCurrent(c => Math.min(slides.length - 1, c + 1)), [slides.length]);
+  const handlePrev = useCallback(() => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+    setCurrent(c => Math.max(0, c - 1));
+  }, []);
+
+  const handleNext = useCallback(() => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+    setCurrent(c => Math.min(slides.length - 1, c + 1));
+  }, [slides.length]);
+
+  const toggleNarration = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  }, []);
+
+  const hasNarration   = !!narrationUrl && !suppressNarration;
+  const nextBlocked    = !dwellReady;
+  const nextBlockLabel = narrating ? 'listening…' : 'absorbing…';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', minHeight: '560px', marginBottom: '28px' }}>
 
-      {/* ── Status bar ─────────────────────────────────────────────── */}
+      {/* ── Status bar ───────────────────────────────────────────────────── */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -71,7 +159,34 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
             {moduleId}
           </span>
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Narration controls */}
+          {hasNarration && (
+            <button
+              onClick={toggleNarration}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '8px',
+                letterSpacing: '0.14em',
+                color: narrating && !narrationPaused ? 'var(--brass)' : 'var(--ink-mute)',
+                textTransform: 'uppercase',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0',
+              }}
+            >
+              <span style={{ fontSize: '10px' }}>
+                {narrating && !narrationPaused ? '⏸' : '▶'}
+              </span>
+              {narrating && !narrationPaused ? 'Narration' : narrationPaused ? 'Paused' : 'Play'}
+            </button>
+          )}
+
           {saving && (
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.14em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
               saving…
@@ -83,12 +198,12 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
         </div>
       </div>
 
-      {/* ── Slide content ───────────────────────────────────────────── */}
+      {/* ── Slide content ─────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '40px 48px' }}>
         <SlideContent slide={slides[current]} />
       </div>
 
-      {/* ── Navigation footer ───────────────────────────────────────── */}
+      {/* ── Navigation footer ─────────────────────────────────────────────── */}
       <div style={{
         borderTop: '1px solid var(--border)',
         background: 'var(--bg-elev-1)',
@@ -150,22 +265,30 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
                 </BrassButton>
               </Link>
             ) : (
-              <button
-                onClick={handleNext}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '10px',
-                  letterSpacing: '0.14em',
-                  color: 'var(--brass)',
-                  textTransform: 'uppercase',
-                  background: 'none',
-                  border: '1px solid var(--brass)',
-                  cursor: 'pointer',
-                  padding: '6px 16px',
-                }}
-              >
-                Next ⤳
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+                {nextBlocked && (
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '7px', letterSpacing: '0.12em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
+                    {nextBlockLabel}
+                  </span>
+                )}
+                <button
+                  onClick={nextBlocked ? undefined : handleNext}
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    letterSpacing: '0.14em',
+                    color: nextBlocked ? 'var(--ink-mute)' : 'var(--brass)',
+                    textTransform: 'uppercase',
+                    background: 'none',
+                    border: `1px solid ${nextBlocked ? 'var(--border)' : 'var(--brass)'}`,
+                    cursor: nextBlocked ? 'default' : 'pointer',
+                    padding: '6px 16px',
+                    transition: 'color 200ms, border-color 200ms',
+                  }}
+                >
+                  Next ⤳
+                </button>
+              </div>
             )}
           </div>
         </div>

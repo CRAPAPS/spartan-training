@@ -12,6 +12,7 @@ export interface SlideSlide {
   keyPoints?: string[];
   legalRef?: string;
   callout?: Callout;
+  narrationUrl?: string;
 }
 
 export interface VideoSlide {
@@ -19,18 +20,22 @@ export interface VideoSlide {
   src: string;
   caption: string;
   description: string;
+  // narrationUrl on video slides plays only when video has no audio track
+  narrationUrl?: string;
 }
 
 export interface ScenarioSlide {
   type: 'scenario';
   scenario: string;
   reflection: string;
+  narrationUrl?: string;
 }
 
 export interface ChecklistSlide {
   type: 'checklist';
   title: string;
   items: Array<{ label: string; description: string }>;
+  narrationUrl?: string;
 }
 
 export type Slide = SlideSlide | VideoSlide | ScenarioSlide | ChecklistSlide;
@@ -40,3 +45,5 @@ export interface LessonProgress {
   totalSlides: number;
   lastSavedAt: string;
 }
+
+export type TTSProvider = 'elevenlabs' | 'polly' | 'google';
