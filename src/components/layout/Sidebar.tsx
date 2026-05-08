@@ -84,10 +84,13 @@ export function Sidebar({ role = 'agent', isOpen = false }: SidebarProps) {
       <Rule />
 
       {/* Public site links */}
-      <div style={{ padding: '12px 0 4px' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase', padding: '0 20px', display: 'block', marginBottom: '4px' }}>
-          Public Site
-        </span>
+      <div style={{ padding: '14px 0 8px' }}>
+        <div style={{ padding: '0 20px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.18em', color: 'var(--brass)', textTransform: 'uppercase', opacity: 0.7 }}>
+            Public Site
+          </span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+        </div>
         {[
           { label: 'Home',       href: '/' },
           { label: 'Curriculum', href: '/curriculum' },
@@ -102,13 +105,13 @@ export function Sidebar({ role = 'agent', isOpen = false }: SidebarProps) {
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              padding: '7px 20px',
+              padding: '8px 20px',
               textDecoration: 'none',
-              color: 'var(--ink-mute)',
+              borderLeft: '2px solid transparent',
             }}
           >
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.12em', color: 'var(--ink-mute)' }}>↗</span>
-            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--ink-mute)', letterSpacing: '0.04em' }}>{item.label}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.12em', color: 'var(--brass)', opacity: 0.6 }}>↗</span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)', letterSpacing: '0.04em' }}>{item.label}</span>
           </Link>
         ))}
       </div>

@@ -41,31 +41,15 @@ async function generateElevenLabs(text: string, opts: TTSOptions): Promise<Buffe
 }
 
 // ── AWS Polly ────────────────────────────────────────────────────────────────
+// Polly support is reserved for future use. Install @aws-sdk/client-polly and
+// set TTS_PROVIDER=polly + AWS credentials to enable it.
 
-async function generatePolly(text: string, opts: TTSOptions): Promise<Buffer> {
-  // Requires: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-  // and @aws-sdk/client-polly installed
-  const { PollyClient, SynthesizeSpeechCommand } = await import('@aws-sdk/client-polly').catch(() => {
-    throw new Error('@aws-sdk/client-polly not installed — run: npm i @aws-sdk/client-polly');
-  });
-
-  const client = new PollyClient({ region: process.env.AWS_REGION ?? 'us-east-1' });
-  const voiceId = (opts.voiceId ?? process.env.POLLY_VOICE_ID ?? 'Matthew') as string;
-
-  const { AudioStream } = await client.send(new SynthesizeSpeechCommand({
-    Text: text,
-    OutputFormat: 'mp3',
-    VoiceId: voiceId as Parameters<typeof SynthesizeSpeechCommand>[0]['VoiceId'],
-    Engine: 'neural',
-  }));
-
-  if (!AudioStream) throw new Error('Polly returned no audio stream');
-
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of AudioStream as AsyncIterable<Uint8Array>) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function generatePolly(_text: string, _opts: TTSOptions): Promise<Buffer> {
+  throw new Error(
+    'AWS Polly provider not yet configured. ' +
+    'Install @aws-sdk/client-polly and set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION.'
+  );
 }
 
 // ── Google TTS ───────────────────────────────────────────────────────────────
