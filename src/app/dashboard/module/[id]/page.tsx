@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { scormCloud } from '@/lib/scormCloud';
 import { SCORMPlayerClient } from '@/components/course/SCORMPlayerClient';
+import { SlidePlayerClient } from '@/components/course/SlidePlayerClient';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { Rule } from '@/components/primitives/Rule';
+import type { Slide } from '@/types/lesson';
 
 interface ModulePageProps {
   params: Promise<{ id: string }>;
@@ -31,10 +33,22 @@ export default async function ModulePage({ params }: ModulePageProps) {
   // Check operator's existing progress for this module
   const { data: progress } = await supabaseAdmin
     .from('operator_progress')
-    .select('status, score, attempts, is_competent, completed_at')
+    .select('status, score, attempts, is_competent, completed_at, scorm_data')
     .eq('operator_id', user!.id)
     .eq('module_id', id)
     .single();
+
+  // Fetch lesson slides if available
+  const { data: lesson } = await supabaseAdmin
+    .from('module_lessons')
+    .select('slides, slide_count')
+    .eq('module_id', id)
+    .single();
+
+  const initialSlide = (progress?.scorm_data as Record<string, unknown> | null)
+    ?.lesson
+    ? ((progress!.scorm_data as Record<string, unknown>).lesson as Record<string, unknown>).currentSlide as number ?? 0
+    : 0;
 
   if (module.scorm_course_id === 'TBD') {
     return (
@@ -65,15 +79,24 @@ export default async function ModulePage({ params }: ModulePageProps) {
           </div>
         )}
 
-        {/* Video content notice */}
-        <div style={{ padding: '16px', border: '1px solid var(--border)', background: 'var(--bg-elev-1)', marginBottom: '28px', display: 'flex', gap: '12px' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.16em', color: 'var(--ink-mute)', textTransform: 'uppercase', paddingTop: '2px', flexShrink: 0 }}>
-            VIDEO
-          </span>
-          <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)', lineHeight: 1.6 }}>
-            Video content for this module is being produced via Colossyan AI and will be embedded here once the SCORM package is uploaded. The knowledge assessment is available now — review the module objectives above before proceeding.
-          </span>
-        </div>
+        {/* Lesson player or video placeholder */}
+        {lesson && Array.isArray(lesson.slides) && lesson.slides.length > 0 ? (
+          <SlidePlayerClient
+            moduleId={id}
+            slides={lesson.slides as Slide[]}
+            initialSlide={initialSlide}
+            passingScore={module.passing_score ?? 80}
+          />
+        ) : (
+          <div style={{ padding: '16px', border: '1px solid var(--border)', background: 'var(--bg-elev-1)', marginBottom: '28px', display: 'flex', gap: '12px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.16em', color: 'var(--ink-mute)', textTransform: 'uppercase', paddingTop: '2px', flexShrink: 0 }}>
+              VIDEO
+            </span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)', lineHeight: 1.6 }}>
+              Video content for this module is being produced via Colossyan AI and will be embedded here once the SCORM package is uploaded. The knowledge assessment is available now — review the module objectives above before proceeding.
+            </span>
+          </div>
+        )}
 
         {/* CTA */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
