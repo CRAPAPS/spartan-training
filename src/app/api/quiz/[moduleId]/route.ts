@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { sendCriticalFailAlert } from '@/lib/email';
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
@@ -118,6 +119,28 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     answers,
     behavioral_data: behavioralData,
   });
+
+  // ── Critical fail email alert ─────────────────────────────────────────────────
+  if (criticalFail) {
+    const { data: op } = await admin
+      .from('operators')
+      .select('full_name, email, operator_id, commander_email')
+      .eq('id', user.id)
+      .single();
+    const { data: mod } = await admin
+      .from('mjm_modules')
+      .select('title')
+      .eq('id', moduleId)
+      .single();
+    if (op && mod) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const o = op as any; const m = mod as any;
+      sendCriticalFailAlert(
+        o.email, o.full_name, o.operator_id,
+        moduleId, m.title, o.commander_email ?? null,
+      ).catch(err => console.error('[quiz] critical fail email failed:', err));
+    }
+  }
 
   return NextResponse.json({
     totalQuestions: questions.length,

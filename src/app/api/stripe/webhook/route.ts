@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabaseServer';
+import { sendEnrollmentConfirmation } from '@/lib/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
 
@@ -73,6 +74,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       event:       'ENROLLMENT_COMPLETE',
       metadata:    { track, operator_id: operatorId, stripe_session: session.id },
     });
+
+    // Send enrollment confirmation email (non-blocking)
+    sendEnrollmentConfirmation(email, fullName, operatorId, track).catch(
+      err => console.error('[webhook] enrollment email failed:', err)
+    );
   }
 
   return NextResponse.json({ received: true });
