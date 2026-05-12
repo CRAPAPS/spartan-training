@@ -58,22 +58,22 @@ export function PublicNav() {
   );
 
   return (
-    <nav className="pub-nav">
+    <nav className="pub-nav" style={{ position: 'relative' }}>
       <Lockup logoSize={40} textSize="sm" />
 
-      {/* Desktop links */}
+      {/* Desktop links — hidden on mobile via CSS */}
       <div className="pub-nav-links">
         {NAV_LINKS.map(item => (
           <Link key={item.label} href={item.href} style={linkStyle}>{item.label}</Link>
         ))}
       </div>
 
-      {/* Desktop CTAs */}
-      <div className={`pub-nav-cta${open ? ' open' : ''}`}>
+      {/* Desktop CTAs — hidden on mobile via CSS */}
+      <div className="pub-nav-cta">
         {CTAs}
       </div>
 
-      {/* Mobile hamburger */}
+      {/* Mobile hamburger — hidden on desktop via CSS */}
       <button
         className="pub-hamburger"
         onClick={() => setOpen(v => !v)}
@@ -82,15 +82,32 @@ export function PublicNav() {
         {open ? '✕' : '☰'}
       </button>
 
-      {/* Mobile dropdown */}
-      <div className={`pub-nav-links${open ? ' open' : ''}`}>
-        {NAV_LINKS.map(item => (
-          <Link key={item.label} href={item.href} style={linkStyle}>{item.label}</Link>
-        ))}
-        <div style={{ display: 'flex', gap: '12px', paddingTop: '12px' }}>
-          {CTAs}
+      {/* Mobile drawer — only mounted when open, so links never duplicate */}
+      {open && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          background: 'var(--bg-elev-1)',
+          borderBottom: '1px solid var(--border)',
+          borderTop: '1px solid var(--border)',
+          padding: '20px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '18px',
+          zIndex: 999,
+        }}>
+          {NAV_LINKS.map(item => (
+            <Link key={item.label} href={item.href} style={{ ...linkStyle, fontSize: '13px' }}>
+              {item.label}
+            </Link>
+          ))}
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+            {CTAs}
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
