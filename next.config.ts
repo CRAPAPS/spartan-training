@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob:",
               "frame-src https://cloud.scorm.com",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              "media-src 'self' https://*.supabase.co",
             ].join('; '),
           },
         ],
