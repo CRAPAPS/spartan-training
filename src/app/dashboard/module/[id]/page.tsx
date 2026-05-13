@@ -68,10 +68,10 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
   if (module.scorm_course_id === 'TBD') {
     return (
-      <div style={{ padding: '40px 48px', maxWidth: '780px' }}>
+      <div className="module-page">
 
         {/* Module header */}
-        <div style={{ marginBottom: '32px' }}>
+        <div className="module-header">
           <MonoLabel style={{ marginBottom: '10px' }}>{module.id} · MJM 2026 Armed Security</MonoLabel>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, marginBottom: '12px' }}>
             {module.title}
@@ -115,7 +115,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
         )}
 
         {/* CTA */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="module-cta">
           <Link href={`/dashboard/module/${id}/quiz`}>
             <BrassButton variant="primary" size="md">
               {progress?.is_competent ? 'Retake Assessment' : 'Begin Knowledge Assessment'} ⤳

@@ -140,19 +140,10 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
   const nextBlockLabel = narrating ? 'listening…' : 'absorbing…';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', minHeight: '560px', marginBottom: '28px' }}>
+    <div className="slide-player">
 
       {/* ── Status bar ───────────────────────────────────────────────────── */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 20px',
-        height: '36px',
-        background: 'var(--bg-elev-1)',
-        borderBottom: '1px solid var(--border)',
-        flexShrink: 0,
-      }}>
+      <div className="slide-statusbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brass)', flexShrink: 0 }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.16em', color: 'var(--ink-dim)', textTransform: 'uppercase' }}>
@@ -203,20 +194,12 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
       </div>
 
       {/* ── Slide content ─────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '40px 48px' }}>
+      <div className="slide-content">
         <SlideContent slide={slides[current]} />
       </div>
 
       {/* ── Navigation footer ─────────────────────────────────────────────── */}
-      <div style={{
-        borderTop: '1px solid var(--border)',
-        background: 'var(--bg-elev-1)',
-        padding: '16px 24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '14px',
-        flexShrink: 0,
-      }}>
+      <div className="slide-footer">
         {/* Progress bar */}
         <div style={{ height: '3px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{
@@ -228,7 +211,7 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
         </div>
 
         {/* Navigation controls */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div className="slide-nav-row">
           <button
             onClick={handlePrev}
             disabled={isFirst}
