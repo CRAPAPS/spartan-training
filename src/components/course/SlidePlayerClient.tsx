@@ -17,79 +17,60 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
   const [current, setCurrent] = useState(
     Math.max(0, Math.min(initialSlide, slides.length - 1))
   );
-  const [saving, setSaving]           = useState(false);
-  const [narrating, setNarrating]     = useState(false);
-  const [narrationPaused, setPaused]  = useState(false);
-  const [dwellReady, setDwellReady]   = useState(false);
+  const [saving, setSaving]               = useState(false);
+  const [narrating, setNarrating]         = useState(false);
+  const [narrationPaused, setPaused]      = useState(false);
+  const [narrationError, setNarrationError] = useState(false);
+  const [dwellReady, setDwellReady]       = useState(false);
 
   const saveTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const audioRef      = useRef<HTMLAudioElement | null>(null);
+  const audioRef      = useRef<HTMLAudioElement>(null);
 
   const isFirst = current === 0;
   const isLast  = current === slides.length - 1;
   const pct     = slides.length > 1 ? (current / (slides.length - 1)) * 100 : 100;
 
-  const currentSlide    = slides[current];
-  const narrationUrl    = currentSlide.narrationUrl;
-  // Video slides handle their own audio — suppress narration unless no video src
-  const suppressNarration =
-    currentSlide.type === 'video' && !!(currentSlide as { src?: string }).src;
+  const currentSlide      = slides[current];
+  const narrationUrl      = currentSlide.narrationUrl ?? null;
+  const suppressNarration = currentSlide.type === 'video' && !!(currentSlide as { src?: string }).src;
+  const hasNarration      = !!narrationUrl && !suppressNarration;
 
-  // ── Dwell timer — 20s minimum per slide ─────────────────────────────────
+  // ── Dwell timer — 20s minimum per slide ──────────────────────────────────
   useEffect(() => {
     setDwellReady(false);
     if (dwellTimerRef.current) clearTimeout(dwellTimerRef.current);
     dwellTimerRef.current = setTimeout(() => setDwellReady(true), 20_000);
-    return () => {
-      if (dwellTimerRef.current) clearTimeout(dwellTimerRef.current);
-    };
+    return () => { if (dwellTimerRef.current) clearTimeout(dwellTimerRef.current); };
   }, [current]);
 
-  // ── Narration — auto-play on slide change ────────────────────────────────
+  // ── Load audio when slide changes ─────────────────────────────────────────
   useEffect(() => {
-    if (!audioRef.current) audioRef.current = new Audio();
     const audio = audioRef.current;
+    if (!audio) return;
 
-    // Stop any previous narration
-    audio.pause();
-    audio.src = '';
     setNarrating(false);
     setPaused(false);
+    setNarrationError(false);
 
-    if (!narrationUrl || suppressNarration) return;
+    if (!hasNarration || !narrationUrl) {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      return;
+    }
 
     audio.src = narrationUrl;
     audio.load();
-
-    const onPlay  = () => { setNarrating(true); setPaused(false); };
-    const onPause = () => { setPaused(true); };
-    const onEnded = () => { setNarrating(false); setPaused(false); setDwellReady(true); };
-    const onError = () => { setNarrating(false); };
-
-    audio.addEventListener('play',  onPlay);
-    audio.addEventListener('pause', onPause);
-    audio.addEventListener('ended', onEnded);
-    audio.addEventListener('error', onError);
-
-    // Browsers require user gesture before autoplay — attempt it, fail silently
+    // Attempt autoplay — browsers block this without a prior user gesture; user clicks Play
     audio.play().catch(() => {});
+  }, [current, hasNarration, narrationUrl]);
 
-    return () => {
-      audio.removeEventListener('play',  onPlay);
-      audio.removeEventListener('pause', onPause);
-      audio.removeEventListener('ended', onEnded);
-      audio.removeEventListener('error', onError);
-    };
-  }, [current, narrationUrl, suppressNarration]);
-
-  // Cleanup audio on unmount
+  // ── Cleanup on unmount ────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-      }
+      const audio = audioRef.current;
+      if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); }
     };
   }, []);
 
@@ -104,43 +85,58 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ currentSlide: current, totalSlides: slides.length }),
         });
-      } catch {
-        // Non-blocking
-      } finally {
-        setSaving(false);
-      }
+      } catch { /* non-blocking */ } finally { setSaving(false); }
     }, 1500);
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [current, moduleId, slides.length]);
 
-  const handlePrev = useCallback(() => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
-    setCurrent(c => Math.max(0, c - 1));
+  const stopAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) { audio.pause(); audio.currentTime = 0; }
   }, []);
 
+  const handlePrev = useCallback(() => {
+    stopAudio();
+    setCurrent(c => Math.max(0, c - 1));
+  }, [stopAudio]);
+
   const handleNext = useCallback(() => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+    stopAudio();
     setCurrent(c => Math.min(slides.length - 1, c + 1));
-  }, [slides.length]);
+  }, [stopAudio, slides.length]);
 
   const toggleNarration = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !hasNarration) return;
     if (audio.paused) {
-      audio.play().catch(() => {});
+      audio.play().catch(err => {
+        console.error('[SlidePlayer] play failed:', err, narrationUrl);
+        setNarrationError(true);
+      });
     } else {
       audio.pause();
     }
-  }, []);
+  }, [hasNarration, narrationUrl]);
 
-  const hasNarration   = !!narrationUrl && !suppressNarration;
   const nextBlocked    = !dwellReady;
   const nextBlockLabel = narrating ? 'listening…' : 'absorbing…';
 
   return (
     <div className="slide-player">
+
+      {/* DOM-attached audio element — browser media lifecycle */}
+      <audio
+        ref={audioRef}
+        onPlay={() => { setNarrating(true); setPaused(false); setNarrationError(false); }}
+        onPause={() => { setPaused(true); }}
+        onEnded={() => { setNarrating(false); setPaused(false); setDwellReady(true); }}
+        onError={() => {
+          console.error('[SlidePlayer] audio load error:', narrationUrl);
+          setNarrating(false);
+          setNarrationError(true);
+        }}
+        style={{ display: 'none' }}
+      />
 
       {/* ── Status bar ───────────────────────────────────────────────────── */}
       <div className="slide-statusbar">
@@ -152,11 +148,10 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Narration controls */}
           {hasNarration && (
             <button
               onClick={toggleNarration}
-              title={narrating && !narrationPaused ? 'Pause narration' : 'Play narration'}
+              title={narrationError ? 'Audio failed to load' : narrating ? 'Pause narration' : 'Play narration'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -164,21 +159,20 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
                 fontFamily: 'var(--font-mono)',
                 fontSize: '10px',
                 letterSpacing: '0.12em',
-                color: narrating && !narrationPaused ? 'var(--brass)' : 'var(--ink-dim)',
+                color: narrationError ? 'var(--danger)' : narrating && !narrationPaused ? 'var(--brass)' : 'var(--ink-dim)',
                 textTransform: 'uppercase',
                 background: 'none',
-                border: `1px solid ${narrating && !narrationPaused ? 'var(--brass)' : 'var(--border)'}`,
-                cursor: 'pointer',
+                border: `1px solid ${narrationError ? 'var(--danger)' : narrating && !narrationPaused ? 'var(--brass)' : 'var(--border)'}`,
+                cursor: narrationError ? 'default' : 'pointer',
                 padding: '5px 12px',
-                borderRadius: '2px',
                 transition: 'color 200ms, border-color 200ms',
                 whiteSpace: 'nowrap',
               }}
             >
               <span style={{ fontSize: '13px', lineHeight: 1 }}>
-                {narrating && !narrationPaused ? '⏸' : '▶'}
+                {narrationError ? '⚠' : narrating && !narrationPaused ? '⏸' : '▶'}
               </span>
-              {narrating && !narrationPaused ? 'Pause' : narrationPaused ? 'Resume' : 'Play Narration'}
+              {narrationError ? 'Audio Error' : narrating && !narrationPaused ? 'Pause' : narrationPaused ? 'Resume' : 'Play Narration'}
             </button>
           )}
 
@@ -200,31 +194,19 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
 
       {/* ── Navigation footer ─────────────────────────────────────────────── */}
       <div className="slide-footer">
-        {/* Progress bar */}
-        <div style={{ height: '3px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%',
-            width: `${pct}%`,
-            background: 'var(--brass)',
-            transition: 'width 300ms ease',
-          }} />
+        <div style={{ height: '3px', background: 'var(--border)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: 'var(--brass)', transition: 'width 300ms ease' }} />
         </div>
 
-        {/* Navigation controls */}
         <div className="slide-nav-row">
           <button
             onClick={handlePrev}
             disabled={isFirst}
             style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '10px',
-              letterSpacing: '0.14em',
+              fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em',
               color: isFirst ? 'var(--ink-mute)' : 'var(--ink-dim)',
-              textTransform: 'uppercase',
-              background: 'none',
-              border: 'none',
-              cursor: isFirst ? 'not-allowed' : 'pointer',
-              padding: '6px 0',
+              textTransform: 'uppercase', background: 'none', border: 'none',
+              cursor: isFirst ? 'not-allowed' : 'pointer', padding: '6px 0',
             }}
           >
             ← Previous
@@ -233,23 +215,14 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link
               href={`/dashboard/module/${moduleId}/quiz`}
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '8px',
-                letterSpacing: '0.14em',
-                color: 'var(--ink-mute)',
-                textTransform: 'uppercase',
-                textDecoration: 'none',
-              }}
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.14em', color: 'var(--ink-mute)', textTransform: 'uppercase', textDecoration: 'none' }}
             >
               Skip to Assessment ↗
             </Link>
 
             {isLast ? (
               <Link href={`/dashboard/module/${moduleId}/quiz`} style={{ textDecoration: 'none' }}>
-                <BrassButton variant="primary" size="sm">
-                  Begin Knowledge Assessment ⤳
-                </BrassButton>
+                <BrassButton variant="primary" size="sm">Begin Knowledge Assessment ⤳</BrassButton>
               </Link>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
@@ -261,15 +234,11 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
                 <button
                   onClick={nextBlocked ? undefined : handleNext}
                   style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '10px',
-                    letterSpacing: '0.14em',
+                    fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em',
                     color: nextBlocked ? 'var(--ink-mute)' : 'var(--brass)',
-                    textTransform: 'uppercase',
-                    background: 'none',
+                    textTransform: 'uppercase', background: 'none',
                     border: `1px solid ${nextBlocked ? 'var(--border)' : 'var(--brass)'}`,
-                    cursor: nextBlocked ? 'default' : 'pointer',
-                    padding: '6px 16px',
+                    cursor: nextBlocked ? 'default' : 'pointer', padding: '6px 16px',
                     transition: 'color 200ms, border-color 200ms',
                   }}
                 >
@@ -280,7 +249,6 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
           </div>
         </div>
 
-        {/* Passing threshold note */}
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.12em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
           Assessment passing threshold: {passingScore}% · Critical Fail active
         </span>
