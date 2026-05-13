@@ -165,25 +165,29 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
           {hasNarration && (
             <button
               onClick={toggleNarration}
+              title={narrating && !narrationPaused ? 'Pause narration' : 'Play narration'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '7px',
                 fontFamily: 'var(--font-mono)',
-                fontSize: '8px',
-                letterSpacing: '0.14em',
-                color: narrating && !narrationPaused ? 'var(--brass)' : 'var(--ink-mute)',
+                fontSize: '10px',
+                letterSpacing: '0.12em',
+                color: narrating && !narrationPaused ? 'var(--brass)' : 'var(--ink-dim)',
                 textTransform: 'uppercase',
                 background: 'none',
-                border: 'none',
+                border: `1px solid ${narrating && !narrationPaused ? 'var(--brass)' : 'var(--border)'}`,
                 cursor: 'pointer',
-                padding: '0',
+                padding: '5px 12px',
+                borderRadius: '2px',
+                transition: 'color 200ms, border-color 200ms',
+                whiteSpace: 'nowrap',
               }}
             >
-              <span style={{ fontSize: '10px' }}>
+              <span style={{ fontSize: '13px', lineHeight: 1 }}>
                 {narrating && !narrationPaused ? '⏸' : '▶'}
               </span>
-              {narrating && !narrationPaused ? 'Narration' : narrationPaused ? 'Paused' : 'Play'}
+              {narrating && !narrationPaused ? 'Pause' : narrationPaused ? 'Resume' : 'Play Narration'}
             </button>
           )}
 
