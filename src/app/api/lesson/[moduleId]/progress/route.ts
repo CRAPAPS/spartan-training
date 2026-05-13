@@ -20,8 +20,8 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Verify hard gate — operator can access this module (RLS-scoped client)
-  const { data: module } = await supabase
+  // Verify module exists — use admin client (publishable key breaks PostgREST)
+  const { data: module } = await admin
     .from('mjm_modules')
     .select('id')
     .eq('id', moduleId)
