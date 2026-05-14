@@ -7,45 +7,45 @@ import { Rule } from '@/components/primitives/Rule';
 const TRACKS = [
   {
     num: 'I', id: 'armed-security', title: 'Armed Security Officer',
-    hours: '16 hrs', modules: 16, price: '$199', active: true,
-    desc: 'GBPDSA-compliant armed security officer training covering legal authority, use of force, firearms safety, and Georgia licensing requirements.',
+    hours: '16 hrs', hoursDetail: '8 hrs online · 8 hrs range', modules: 16, price: '$249', active: true,
+    desc: 'GBPDSA-compliant armed security officer training covering legal authority, use of force, firearms safety, and Georgia licensing requirements. Includes 8 hours of online classroom instruction and 8 hours of live-fire range qualification with a GA-licensed Firearms Instructor.',
+    rangeNote: 'Range qualification required with a GBPDSA-licensed Firearms Instructor — minimum 80% to qualify.',
     topics: ['Legal Foundations & Use of Force', 'Firearms Safety & Handling', 'Threat Assessment', 'Emergency Response', 'Georgia GBPDSA Compliance', 'Final Accreditation Exam'],
   },
   {
-    num: 'II', id: 'private-investigation', title: 'Private Investigation',
-    hours: '72 hrs', modules: 12, price: '$349', active: false,
-    desc: 'Comprehensive private investigation curriculum covering surveillance, evidence handling, legal authority, and investigative methodology.',
+    num: 'II', id: 'unarmed-security', title: 'Unarmed Security Officer',
+    hours: '24 hrs', hoursDetail: '24 hrs online', modules: 0, price: '$199', active: true,
+    desc: 'Georgia GBPDSA-compliant unarmed security officer training covering professional conduct, conflict de-escalation, access control, incident documentation, and legal authority for unarmed personnel.',
+    rangeNote: '',
+    topics: ['Legal Authority & Limitations', 'Conflict De-escalation', 'Access Control', 'Incident Documentation', 'Georgia GBPDSA Compliance'],
+  },
+  {
+    num: 'III', id: 'private-investigation', title: 'Private Investigation',
+    hours: '72 hrs', hoursDetail: '72 hrs online', modules: 0, price: '$849', active: false,
+    desc: 'Comprehensive private investigation curriculum covering surveillance, evidence handling, legal authority, and investigative methodology under Georgia GBPDSA Title 43, Chapter 38.',
+    rangeNote: '',
     topics: ['Surveillance Techniques', 'Evidence Documentation', 'Legal Authority & Boundaries', 'Report Writing', 'Digital Investigation Basics'],
   },
   {
-    num: 'III', id: 'executive-protection', title: 'Executive Protection',
-    hours: '24 hrs', modules: 10, price: '$249', active: false,
+    num: 'IV', id: 'ethics-ceu', title: 'Professional Ethics (CEU)',
+    hours: 'CEU', hoursDetail: 'Required every 2 years', modules: 0, price: 'Coming Soon', active: false,
+    desc: 'Georgia-required continuing education unit covering professional ethics, conduct standards, and legal obligations for licensed security and investigation professionals. Satisfies the GBPDSA 2-year Ethics CEU mandate.',
+    rangeNote: '',
+    topics: ['Professional Conduct Standards', 'Ethical Decision-Making', 'Legal Obligations', 'Disciplinary Procedures', 'GBPDSA Code of Ethics'],
+  },
+  {
+    num: 'V', id: 'anti-terrorism', title: 'Anti-Terrorism (CEU)',
+    hours: 'CEU', hoursDetail: 'Required every 2 years', modules: 0, price: 'Coming Soon', active: false,
+    desc: 'Georgia-required continuing education unit covering terrorism awareness, threat recognition, protective response protocols, and coordination with law enforcement. Satisfies the GBPDSA 2-year Anti-Terrorism CEU mandate.',
+    rangeNote: '',
+    topics: ['Terrorism Awareness', 'Threat Indicator Recognition', 'Protective Response', 'Law Enforcement Coordination', 'Reporting Protocols'],
+  },
+  {
+    num: 'VI', id: 'executive-protection', title: 'Executive Protection',
+    hours: '24 hrs', hoursDetail: '24 hrs online', modules: 0, price: '$249', active: false,
     desc: 'Executive protection specialist training covering advance work, protective intelligence, motorcade operations, and dignitary security.',
+    rangeNote: '',
     topics: ['Advance Work & Reconnaissance', 'Threat & Risk Assessment', 'Protective Intelligence', 'Motorcade Operations', 'Crisis Response'],
-  },
-  {
-    num: 'IV', id: 'advance-work', title: 'Advance Work',
-    hours: '16 hrs', modules: 8, price: 'Coming Soon', active: false,
-    desc: 'Specialized advance work curriculum for security professionals managing pre-event site surveys, route planning, and logistics coordination.',
-    topics: ['Site Survey Methodology', 'Route Analysis', 'Logistics Coordination', 'Threat Assessment'],
-  },
-  {
-    num: 'V', id: 'firearms-instructor', title: 'Firearms Instructor',
-    hours: '40 hrs', modules: 14, price: 'Coming Soon', active: false,
-    desc: 'Certified firearms instructor program covering range safety, teaching methodology, legal liability, and qualification standards.',
-    topics: ['Range Safety Management', 'Teaching Methodology', 'Qualification Standards', 'Legal Liability'],
-  },
-  {
-    num: 'VI', id: 'use-of-force', title: 'Use of Force',
-    hours: '8 hrs', modules: 6, price: 'Coming Soon', active: false,
-    desc: 'Use of force continuum, legal authority, documentation, and post-incident procedures for security professionals.',
-    topics: ['Force Continuum', 'Legal Thresholds', 'Documentation', 'Post-Incident Protocol'],
-  },
-  {
-    num: 'VII', id: 'field-surveillance', title: 'Field Surveillance',
-    hours: '24 hrs', modules: 9, price: 'Coming Soon', active: false,
-    desc: 'Field surveillance operations including mobile and static surveillance, counter-surveillance, and technical observation methods.',
-    topics: ['Mobile Surveillance', 'Static Operations', 'Counter-Surveillance', 'Technical Methods'],
   },
 ] as const;
 
@@ -102,7 +102,7 @@ export default function CurriculumPage() {
             Accreditation Curriculum
           </h1>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: '16px', color: 'var(--ink-dim)', maxWidth: '640px', lineHeight: 1.7 }}>
-            Seven professional tracks covering the full spectrum of private security disciplines. Each track is designed to meet Georgia GBPDSA standards and delivers field-ready competency.
+            Six professional tracks covering the full spectrum of private security disciplines. Each track meets Georgia GBPDSA standards and delivers field-ready, licensure-compliant competency.
           </p>
         </div>
 
@@ -124,9 +124,13 @@ export default function CurriculumPage() {
                   <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--ink)', marginBottom: '8px' }}>{t.title}</h3>
                   <p style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)', lineHeight: 1.6 }}>{t.desc}</p>
                 </div>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <MonoLabel size="xs">{t.hours}</MonoLabel>
-                  <MonoLabel size="xs">{t.modules} modules</MonoLabel>
+                {'rangeNote' in t && t.rangeNote && (
+                  <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--brass)', padding: '8px 12px' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--brass)', letterSpacing: '0.05em', lineHeight: 1.5 }}>{t.rangeNote}</p>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <MonoLabel size="xs">{t.hoursDetail}</MonoLabel>
                   <MonoLabel size="xs" style={{ color: t.active ? 'var(--brass)' : 'var(--ink-mute)' }}>{t.price}</MonoLabel>
                 </div>
                 {t.active && (
@@ -143,9 +147,14 @@ export default function CurriculumPage() {
 
         {/* Module breakdown — Armed Security */}
         <section>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <MonoLabel dot dotColor="var(--success)">Track I — Armed Security Officer · 16 Modules</MonoLabel>
-            <MonoLabel size="xs">16.0 CREDIT HOURS</MonoLabel>
+            <MonoLabel size="xs">8 HRS ONLINE · 8 HRS RANGE · $249</MonoLabel>
+          </div>
+          <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--brass)', padding: '10px 16px', marginBottom: '24px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--brass)', letterSpacing: '0.05em', lineHeight: 1.6, margin: 0 }}>
+              RANGE REQUIREMENT — 8 hours of live-fire qualification must be completed with a GBPDSA-licensed Firearms Instructor at an approved range. Minimum passing score: 80%. Range session is separate from and in addition to this online curriculum.
+            </p>
           </div>
 
           <div style={{ border: '1px solid var(--border)', overflow: 'hidden' }}>
