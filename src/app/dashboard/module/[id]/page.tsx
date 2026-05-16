@@ -36,6 +36,17 @@ export default async function ModulePage({ params }: ModulePageProps) {
   const userRole = (operatorRow as { role?: string } | null)?.role ?? 'agent';
   const isPrivileged = userRole === 'admin' || userRole === 'coordinator' || userRole === 'super_admin';
 
+  // Enrollment gate — agent must be enrolled in this track to access any module
+  if (!isPrivileged) {
+    const { data: enrollment } = await supabaseAdmin
+      .from('operator_enrollments')
+      .select('id')
+      .eq('operator_id', user.id)
+      .eq('track', module.track)
+      .single();
+    if (!enrollment) redirect('/dashboard?gate=not-enrolled');
+  }
+
   if (!isPrivileged && module.sequence_order > 1) {
     const { data: prevModule } = await supabaseAdmin
       .from('mjm_modules')

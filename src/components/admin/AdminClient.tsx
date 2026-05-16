@@ -16,9 +16,10 @@ interface AdminClientProps {
   operatorMap: Record<string, string>;
   selfRole: string;
   stats: { totalOperators: number; totalCompetencies: number; criticalFails: number };
+  enrollmentMap: Record<string, string[]>;
 }
 
-export function AdminClient({ modules, operators, auditLog, operatorMap, selfRole, stats }: AdminClientProps) {
+export function AdminClient({ modules, operators, auditLog, operatorMap, selfRole, stats, enrollmentMap }: AdminClientProps) {
   const [tab, setTab] = useState<Tab>('modules');
 
   const TABS: { id: Tab; label: string; count?: number }[] = [
@@ -107,7 +108,12 @@ export function AdminClient({ modules, operators, auditLog, operatorMap, selfRol
 
       {/* Tab content */}
       {tab === 'modules' && <ModuleManager modules={modules} />}
-      {tab === 'operators' && <OperatorRoster operators={operators} selfRole={selfRole} />}
+      {tab === 'operators' && (
+        <OperatorRoster
+          operators={operators.map(op => ({ ...op, enrolledTracks: enrollmentMap[op.id] ?? [] }))}
+          selfRole={selfRole}
+        />
+      )}
       {tab === 'audit' && <AuditLogViewer entries={auditLog} operatorMap={operatorMap} />}
     </div>
   );

@@ -59,6 +59,16 @@ export default async function AdminPage() {
     };
   });
 
+  // Enrollment map: operator_id → track[]
+  const { data: enrollmentRows } = await supabaseAdmin
+    .from('operator_enrollments')
+    .select('operator_id, track');
+  const enrollmentMap: Record<string, string[]> = {};
+  (enrollmentRows ?? []).forEach((e: any) => {
+    if (!enrollmentMap[e.operator_id]) enrollmentMap[e.operator_id] = [];
+    enrollmentMap[e.operator_id].push(e.track);
+  });
+
   // Audit log (last 200 entries)
   const { data: auditLog } = await supabaseAdmin
     .from('spartan_audit_log')
@@ -85,6 +95,7 @@ export default async function AdminPage() {
         totalCompetencies,
         criticalFails,
       }}
+      enrollmentMap={enrollmentMap}
     />
   );
 }
