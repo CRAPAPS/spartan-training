@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Lockup } from '@/components/primitives/Lockup';
+import { PublicNav } from '@/components/layout/PublicNav';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { Rule } from '@/components/primitives/Rule';
@@ -21,7 +21,7 @@ const TRACKS = [
   },
   {
     num: 'III', id: 'private-investigation', title: 'Private Investigation',
-    hours: '72 hrs', hoursDetail: '72 hrs online', modules: 0, price: '$849', active: false,
+    hours: '72 hrs', hoursDetail: '72 hrs online', modules: 24, price: '$849', active: false,
     desc: 'Comprehensive private investigation curriculum covering surveillance, evidence handling, legal authority, and investigative methodology under Georgia GBPDSA Title 43, Chapter 38.',
     rangeNote: '',
     topics: ['Surveillance Techniques', 'Evidence Documentation', 'Legal Authority & Boundaries', 'Report Writing', 'Digital Investigation Basics'],
@@ -72,33 +72,14 @@ export default function CurriculumPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Nav */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 56px', borderBottom: '1px solid var(--border)' }}>
-        <Link href="/"><Lockup logoSize={40} textSize="sm" /></Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          {[
-            { label: 'Curriculum', href: '/curriculum' },
-            { label: 'Faculty',    href: '/faculty' },
-            { label: 'About',      href: '/about' },
-            { label: 'Contact',    href: '/contact' },
-          ].map(item => (
-            <Link key={item.label} href={item.href} style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', fontWeight: 500, letterSpacing: '0.1em', color: item.href === '/curriculum' ? 'var(--brass)' : 'var(--ink-dim)', textDecoration: 'none', textTransform: 'uppercase' }}>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <Link href="/sign-in"><BrassButton variant="ghost" size="sm">Sign In</BrassButton></Link>
-          <Link href="/apply"><BrassButton variant="primary" size="sm">Apply ⤳</BrassButton></Link>
-        </div>
-      </nav>
+      <PublicNav />
 
-      <main style={{ flex: 1, padding: '64px 56px' }}>
+      <main className="curriculum-main">
 
         {/* Header */}
         <div style={{ marginBottom: '56px' }}>
           <MonoLabel style={{ marginBottom: '16px' }}>MJM 2026 · GBPDSA Accreditation</MonoLabel>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '48px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.0, marginBottom: '20px' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 6vw, 48px)', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.05, marginBottom: '20px' }}>
             Accreditation Curriculum
           </h1>
           <p style={{ fontFamily: 'var(--font-ui)', fontSize: '16px', color: 'var(--ink-dim)', maxWidth: '640px', lineHeight: 1.7 }}>
@@ -111,7 +92,7 @@ export default function CurriculumPage() {
         {/* Track cards */}
         <section style={{ marginBottom: '64px' }}>
           <MonoLabel style={{ marginBottom: '24px', display: 'block' }}>Accreditation Tracks</MonoLabel>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)' }}>
+          <div className="curriculum-tracks">
             {TRACKS.map(t => (
               <div key={t.id} style={{ background: 'var(--bg)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: '16px', opacity: t.active ? 1 : 0.6 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -147,7 +128,7 @@ export default function CurriculumPage() {
 
         {/* Module breakdown — Armed Security */}
         <section>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div className="curriculum-module-header">
             <MonoLabel dot dotColor="var(--success)">Track I — Armed Security Officer · 16 Modules</MonoLabel>
             <MonoLabel size="xs">8 HRS ONLINE · 8 HRS RANGE · $249</MonoLabel>
           </div>
@@ -158,16 +139,24 @@ export default function CurriculumPage() {
           </div>
 
           <div style={{ border: '1px solid var(--border)', overflow: 'hidden' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 80px', padding: '8px 20px', background: 'var(--bg-elev-2)', borderBottom: '1px solid var(--border)' }}>
-              {['Seq', 'Module Title', 'Hours'].map(col => (
-                <span key={col} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>{col}</span>
-              ))}
+            {/* Header row */}
+            <div className="curriculum-mod-row" style={{ background: 'var(--bg-elev-2)', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Seq</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Module Title</span>
+              <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Hours</span>
             </div>
             {MJM_MODULES.map((m, i) => (
-              <div key={m.seq} style={{ display: 'grid', gridTemplateColumns: '60px 1fr 80px', padding: '12px 20px', borderBottom: i < MJM_MODULES.length - 1 ? '1px solid var(--border)' : 'none', background: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-elev-1)', alignItems: 'center' }}>
+              <div
+                key={m.seq}
+                className="curriculum-mod-row"
+                style={{
+                  borderBottom: i < MJM_MODULES.length - 1 ? '1px solid var(--border)' : 'none',
+                  background: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-elev-1)',
+                }}
+              >
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--brass)', fontWeight: 600 }}>{m.seq}</span>
                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--ink)', fontWeight: parseInt(m.seq) === 16 ? 600 : 400 }}>{m.title}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-dim)' }}>{m.hours}h</span>
+                <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-dim)' }}>{m.hours}h</span>
               </div>
             ))}
           </div>
@@ -175,8 +164,7 @@ export default function CurriculumPage() {
 
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <footer className="curriculum-footer">
         <MonoLabel size="xs">SPARTAN TRAINING LLC · MJM 2026</MonoLabel>
         <MonoLabel size="xs">Georgia PDSC001719 · CFTR001295</MonoLabel>
       </footer>

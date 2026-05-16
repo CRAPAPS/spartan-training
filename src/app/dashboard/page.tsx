@@ -9,21 +9,26 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: visibleModules } = await supabaseAdmin
-    .from('mjm_modules')
-    .select('id, title, track, sequence_order')
-    .order('sequence_order');
+  const [modulesResult, progressResult, operatorResult] = await Promise.all([
+    supabaseAdmin
+      .from('mjm_modules')
+      .select('id, title, track, sequence_order')
+      .order('track')
+      .order('sequence_order'),
+    supabaseAdmin
+      .from('operator_progress')
+      .select('module_id, status, is_competent, score, updated_at')
+      .eq('operator_id', user.id),
+    supabaseAdmin
+      .from('operators')
+      .select('full_name, operator_id')
+      .eq('id', user.id)
+      .single(),
+  ]);
 
-  const { data: progressRows } = await supabase
-    .from('operator_progress')
-    .select('module_id, status, is_competent, score, updated_at')
-    .eq('operator_id', user.id);
-
-  const { data: operator } = await supabase
-    .from('operators')
-    .select('full_name, operator_id')
-    .eq('id', user.id)
-    .single();
+  const visibleModules = modulesResult.data;
+  const progressRows   = progressResult.data;
+  const operator       = operatorResult.data;
 
   const progressMap = Object.fromEntries(
     (progressRows ?? []).map(p => [p.module_id, p])
@@ -44,15 +49,17 @@ export default async function DashboardPage() {
     };
   });
 
+  const totalModules   = (visibleModules ?? []).length;
   const completedCount = (progressRows ?? []).filter(p => p.is_competent).length;
   const totalHours     = completedCount * 1;
   const activeModules  = (progressRows ?? []).filter(p => p.status === 'in_progress').length;
+  const overallPct     = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
   const metrics = [
-    { value: `${completedCount}/16`, label: 'Modules Complete', accent: true },
-    { value: `${Math.round((completedCount / 16) * 100)}%`, label: 'Track Progress' },
-    { value: `${totalHours}h`,       label: 'Hours Logged' },
-    { value: `${activeModules}`,     label: 'In Progress' },
+    { value: `${completedCount}/${totalModules}`, label: 'Modules Complete', accent: true },
+    { value: `${overallPct}%`,                   label: 'Overall Progress' },
+    { value: `${totalHours}h`,                   label: 'Hours Logged' },
+    { value: `${activeModules}`,                 label: 'In Progress' },
   ];
 
   return (
@@ -64,19 +71,12 @@ export default async function DashboardPage() {
       <Rule />
 
       {/* Two-column layout: module table left, briefing video right */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 320px',
-        gap: '28px',
-        alignItems: 'start',
-      }}
-        className="cmd-grid"
-      >
+      <div style={{ display: 'grid', gap: '28px', alignItems: 'start' }} className="cmd-grid">
         {/* Left — module table */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <MonoLabel dot dotColor="var(--brass)">Active Modules</MonoLabel>
-            <MonoLabel size="xs">{visibleIds.size} OF 16 ACCESSIBLE</MonoLabel>
+            <MonoLabel size="xs">{visibleIds.size} OF {totalModules} ACCESSIBLE</MonoLabel>
           </div>
           <ModuleTable modules={tableRows} />
         </div>

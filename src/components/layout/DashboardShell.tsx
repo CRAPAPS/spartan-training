@@ -5,13 +5,22 @@ import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
+export interface TrackProgress {
+  track: string;
+  label: string;
+  completed: number;
+  total: number;
+  pct: number;
+}
+
 interface DashboardShellProps {
   children: React.ReactNode;
   role: string;
   operatorId: string;
+  trackProgress: TrackProgress[];
 }
 
-export function DashboardShell({ children, role, operatorId }: DashboardShellProps) {
+export function DashboardShell({ children, role, operatorId, trackProgress }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -43,6 +52,7 @@ export function DashboardShell({ children, role, operatorId }: DashboardShellPro
         <TopBar
           operatorId={operatorId}
           role={role}
+          trackProgress={trackProgress}
           onMenuToggle={() => setSidebarOpen(v => !v)}
         />
         <main className="main-pad">

@@ -15,6 +15,12 @@ interface ModuleTableProps {
   modules: ModuleRow[];
 }
 
+const TRACK_LABEL: Record<string, string> = {
+  'armed-security':    'ARMED SEC',
+  'private-detective': 'PRIV DET',
+  'unarmed-security':  'UNARMED',
+};
+
 const statusColor: Record<string, string> = {
   completed:   'var(--success)',
   in_progress: 'var(--brass)',
@@ -47,7 +53,7 @@ export function ModuleTable({ modules }: ModuleTableProps) {
             opacity: m.isLocked ? 0.4 : 1,
           }}
         >
-          <MonoLabel>{m.id.replace('MOD-', '')}</MonoLabel>
+          <MonoLabel>{m.id.replace(/^[A-Z]+-/, '')}</MonoLabel>
 
           <span style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {m.isLocked ? (
@@ -60,7 +66,7 @@ export function ModuleTable({ modules }: ModuleTableProps) {
           </span>
 
           <span className="mod-col-track">
-            <MonoLabel size="xs">{m.track.replace('armed-security', 'ARMED SEC')}</MonoLabel>
+            <MonoLabel size="xs">{TRACK_LABEL[m.track] ?? m.track.toUpperCase()}</MonoLabel>
           </span>
 
           {/* Progress bar */}

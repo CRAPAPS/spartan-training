@@ -13,14 +13,16 @@ interface RouteContext {
   params: Promise<{ moduleId: string }>;
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
-  const { moduleId } = await params;
+async function handleProgressSave(
+  req: NextRequest,
+  moduleId: string,
+  isBeacon = false,
+) {
   const supabase = await createServerSupabaseClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Verify module exists — use admin client (publishable key breaks PostgREST)
   const { data: module } = await admin
     .from('mjm_modules')
     .select('id')
@@ -29,8 +31,15 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
   if (!module) return NextResponse.json({ error: 'Access denied' }, { status: 403 });
 
-  const body = await req.json();
-  const { currentSlide, totalSlides } = body as { currentSlide: number; totalSlides: number };
+  // sendBeacon sends text/plain — parse accordingly
+  let body: { currentSlide: number; totalSlides: number };
+  if (isBeacon) {
+    const text = await req.text();
+    body = JSON.parse(text);
+  } else {
+    body = await req.json();
+  }
+  const { currentSlide, totalSlides } = body;
 
   if (typeof currentSlide !== 'number' || currentSlide < 0) {
     return NextResponse.json({ error: 'Invalid slide index' }, { status: 400 });
@@ -42,7 +51,6 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     lastSavedAt: new Date().toISOString(),
   };
 
-  // Check for an existing progress row
   const { data: existing } = await admin
     .from('operator_progress')
     .select('id, status, scorm_data')
@@ -51,7 +59,6 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     .single();
 
   if (!existing) {
-    // First touch — create progress row, fires MODULE_START audit event via trigger
     await admin.from('operator_progress').insert({
       operator_id:  user.id,
       module_id:    moduleId,
@@ -62,12 +69,10 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       updated_at:   new Date().toISOString(),
     });
   } else {
-    // Merge lesson sub-key — preserves existing quiz/answers data
     const merged = {
       ...(existing.scorm_data as Record<string, unknown> ?? {}),
       lesson: lessonData,
     };
-    // Only set in_progress if quiz has not already determined a final status
     const finalStatuses = ['completed', 'reset'];
     const newStatus = finalStatuses.includes(existing.status) ? existing.status : 'in_progress';
 
@@ -79,4 +84,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const { moduleId } = await params;
+  return handleProgressSave(req, moduleId, false);
+}
+
+export async function POST(req: NextRequest, { params }: RouteContext) {
+  const { moduleId } = await params;
+  return handleProgressSave(req, moduleId, true);
 }

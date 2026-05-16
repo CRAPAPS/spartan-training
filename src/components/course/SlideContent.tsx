@@ -115,16 +115,13 @@ function ChecklistSlideRenderer({ slide }: { slide: ChecklistSlide }) {
         {slide.items.map((item, i) => (
           <div
             key={i}
+            className="checklist-item"
             style={{
-              display: 'flex',
-              gap: '20px',
-              padding: '14px 20px',
-              alignItems: 'flex-start',
               borderBottom: i < slide.items.length - 1 ? '1px solid var(--border)' : 'none',
               background: i % 2 === 0 ? 'transparent' : 'var(--bg-elev-1)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '180px', flexShrink: 0 }}>
+            <div className="checklist-label">
               <span style={{ width: '6px', height: '6px', background: 'var(--brass)', flexShrink: 0, marginTop: '1px' }} />
               <span style={{ fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.02em' }}>
                 {item.label}

@@ -3,19 +3,11 @@ import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer'
 import { QuizClient } from '@/components/quiz/QuizClient';
 import { CooldownScreen } from '@/components/quiz/CooldownScreen';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
+import { shuffle } from '@/lib/shuffle';
 import type { ShuffledQuestion, ShuffledOption } from '@/types/quiz';
 
 interface QuizPageProps {
   params: Promise<{ id: string }>;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
 }
 
 export default async function ModuleQuizPage({ params }: QuizPageProps) {

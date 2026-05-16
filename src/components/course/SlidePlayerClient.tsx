@@ -90,6 +90,19 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [current, moduleId, slides.length]);
 
+  // ── Flush on page unload — sendBeacon survives navigation/close ───────────
+  useEffect(() => {
+    const flush = () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      navigator.sendBeacon(
+        `/api/lesson/${moduleId}/progress`,
+        JSON.stringify({ currentSlide: current, totalSlides: slides.length }),
+      );
+    };
+    window.addEventListener('beforeunload', flush);
+    return () => window.removeEventListener('beforeunload', flush);
+  }, [current, moduleId, slides.length]);
+
   const stopAudio = useCallback(() => {
     const audio = audioRef.current;
     if (audio) { audio.pause(); audio.currentTime = 0; }
@@ -147,7 +160,7 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {hasNarration && (
             <button
               onClick={toggleNarration}
@@ -164,7 +177,7 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
                 background: 'none',
                 border: `1px solid ${narrationError ? 'var(--danger)' : narrating && !narrationPaused ? 'var(--brass)' : 'var(--border)'}`,
                 cursor: narrationError ? 'default' : 'pointer',
-                padding: '5px 12px',
+                padding: '5px 10px',
                 transition: 'color 200ms, border-color 200ms',
                 whiteSpace: 'nowrap',
               }}
@@ -172,7 +185,7 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
               <span style={{ fontSize: '13px', lineHeight: 1 }}>
                 {narrationError ? '⚠' : narrating && !narrationPaused ? '⏸' : '▶'}
               </span>
-              {narrationError ? 'Audio Error' : narrating && !narrationPaused ? 'Pause' : narrationPaused ? 'Resume' : 'Play Narration'}
+              {narrationError ? 'Error' : narrating && !narrationPaused ? 'Pause' : narrationPaused ? 'Resume' : 'Play'}
             </button>
           )}
 
@@ -181,8 +194,8 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
               saving…
             </span>
           )}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em', color: 'var(--ink-dim)', textTransform: 'uppercase' }}>
-            Slide {current + 1} of {slides.length}
+          <span className="slide-counter" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em', color: 'var(--ink-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+            {current + 1} / {slides.length}
           </span>
         </div>
       </div>

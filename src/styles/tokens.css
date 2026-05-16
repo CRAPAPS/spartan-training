@@ -609,3 +609,99 @@ html {
   .module-cta { flex-direction: column; align-items: stretch; margin-top: 16px; }
   .module-cta a, .module-cta button { width: 100%; }
 }
+
+/* ── Checklist slide items ──────────────────────────────── */
+.checklist-item {
+  display: flex;
+  gap: 20px;
+  padding: 14px 20px;
+  align-items: flex-start;
+}
+@media (max-width: 767px) {
+  .checklist-item { flex-direction: column; gap: 4px; padding: 12px 14px; }
+}
+
+.checklist-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  flex-shrink: 0;
+}
+@media (max-width: 767px) {
+  .checklist-label { min-width: unset; flex-shrink: 1; }
+}
+
+/* ── Slide statusbar counter — hide on very small screens ── */
+@media (max-width: 480px) {
+  .slide-counter { display: none; }
+}
+
+/* ── Curriculum public page ─────────────────────────────── */
+.curriculum-main {
+  flex: 1;
+  padding: 64px 56px;
+}
+@media (max-width: 1023px) {
+  .curriculum-main { padding: 48px 36px; }
+}
+@media (max-width: 767px) {
+  .curriculum-main { padding: 32px 20px; }
+}
+
+.curriculum-tracks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+@media (max-width: 1023px) {
+  .curriculum-tracks { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .curriculum-tracks { grid-template-columns: 1fr; }
+}
+
+.curriculum-module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+@media (max-width: 767px) {
+  .curriculum-module-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+
+.curriculum-mod-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px;
+  padding: 12px 20px;
+  align-items: center;
+}
+@media (max-width: 480px) {
+  .curriculum-mod-row { grid-template-columns: 44px 1fr; padding: 10px 12px; }
+  .curriculum-mod-hours { display: none !important; }
+}
+
+.curriculum-footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+@media (max-width: 767px) {
+  .curriculum-footer { padding: 20px; flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* ── TopBar profile button — operator ID clamp ──────────── */
+.topbar-op-id {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .topbar-op-id { max-width: 72px; }
+}

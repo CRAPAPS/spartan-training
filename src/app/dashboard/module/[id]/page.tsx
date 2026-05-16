@@ -24,26 +24,34 @@ export default async function ModulePage({ params }: ModulePageProps) {
   // Gate is enforced in application code below.
   const { data: module } = await supabaseAdmin
     .from('mjm_modules')
-    .select('id, title, description, scorm_course_id, passing_score, sequence_order, is_active')
+    .select('id, title, description, scorm_course_id, passing_score, sequence_order, is_active, track')
     .eq('id', id)
     .single();
 
   if (!module || !module.is_active) redirect('/dashboard?gate=blocked');
 
-  // Application-level sequential gate (mirrors RLS hard_gate_module_access_v2)
+  // Application-level sequential gate — track-aware, works for any course prefix
   const { data: operatorRow } = await supabaseAdmin
     .from('operators').select('role').eq('id', user.id).single();
   const userRole = (operatorRow as { role?: string } | null)?.role ?? 'agent';
   const isPrivileged = userRole === 'admin' || userRole === 'coordinator' || userRole === 'super_admin';
 
   if (!isPrivileged && module.sequence_order > 1) {
-    const { data: prevProgress } = await supabaseAdmin
-      .from('operator_progress')
-      .select('is_competent')
-      .eq('operator_id', user.id)
-      .eq('module_id', `MOD-${String(module.sequence_order - 1).padStart(2, '0')}`)
+    const { data: prevModule } = await supabaseAdmin
+      .from('mjm_modules')
+      .select('id')
+      .eq('track', module.track)
+      .eq('sequence_order', module.sequence_order - 1)
       .single();
-    if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
+    if (prevModule) {
+      const { data: prevProgress } = await supabaseAdmin
+        .from('operator_progress')
+        .select('is_competent')
+        .eq('operator_id', user.id)
+        .eq('module_id', prevModule.id)
+        .single();
+      if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
+    }
   }
 
   // Check operator's existing progress for this module
@@ -66,13 +74,20 @@ export default async function ModulePage({ params }: ModulePageProps) {
     ? ((progress!.scorm_data as Record<string, unknown>).lesson as Record<string, unknown>).currentSlide as number ?? 0
     : 0;
 
+  const TRACK_LABEL: Record<string, string> = {
+    'armed-security':   'MJM 2026 Armed Security',
+    'private-detective': 'MJM 2026 Private Detective',
+    'unarmed-security': 'MJM 2026 Unarmed Security',
+  };
+  const trackLabel = TRACK_LABEL[module.track as string] ?? 'MJM 2026';
+
   if (module.scorm_course_id === 'TBD') {
     return (
       <div className="module-page">
 
         {/* Module header */}
         <div className="module-header">
-          <MonoLabel style={{ marginBottom: '10px' }}>{module.id} · MJM 2026 Armed Security</MonoLabel>
+          <MonoLabel style={{ marginBottom: '10px' }}>{module.id} · {trackLabel}</MonoLabel>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1, marginBottom: '12px' }}>
             {module.title}
           </h1>
