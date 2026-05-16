@@ -14,14 +14,14 @@ const TRACKS = [
   },
   {
     num: 'II', id: 'unarmed-security', title: 'Unarmed Security Officer',
-    hours: '24 hrs', hoursDetail: '24 hrs online', modules: 0, price: '$199', active: true,
+    hours: '24 hrs', hoursDetail: '24 hrs online', modules: 0, price: '$199', active: false,
     desc: 'Georgia GBPDSA-compliant unarmed security officer training covering professional conduct, conflict de-escalation, access control, incident documentation, and legal authority for unarmed personnel.',
     rangeNote: '',
     topics: ['Legal Authority & Limitations', 'Conflict De-escalation', 'Access Control', 'Incident Documentation', 'Georgia GBPDSA Compliance'],
   },
   {
-    num: 'III', id: 'private-investigation', title: 'Private Investigation',
-    hours: '72 hrs', hoursDetail: '72 hrs online', modules: 24, price: '$849', active: false,
+    num: 'III', id: 'private-detective', title: 'Private Detective',
+    hours: '72 hrs', hoursDetail: '72 hrs online', modules: 24, price: '$849', active: true,
     desc: 'Comprehensive private investigation curriculum covering surveillance, evidence handling, legal authority, and investigative methodology under Georgia GBPDSA Title 43, Chapter 38.',
     rangeNote: '',
     topics: ['Surveillance Techniques', 'Evidence Documentation', 'Legal Authority & Boundaries', 'Report Writing', 'Digital Investigation Basics'],
@@ -47,6 +47,33 @@ const TRACKS = [
     rangeNote: '',
     topics: ['Advance Work & Reconnaissance', 'Threat & Risk Assessment', 'Protective Intelligence', 'Motorcade Operations', 'Crisis Response'],
   },
+] as const;
+
+const PI_MODULES = [
+  { seq: '01', title: 'Introduction to Private Investigation in Georgia',          hours: '3.0' },
+  { seq: '02', title: 'Legal Authority & Limitations of Private Detectives',       hours: '3.0' },
+  { seq: '03', title: 'Ethics, Conduct & Professional Standards',                  hours: '3.0' },
+  { seq: '04', title: 'Surveillance Techniques & Operational Security',            hours: '3.0' },
+  { seq: '05', title: 'Stationary & Mobile Surveillance Operations',               hours: '3.0' },
+  { seq: '06', title: 'Evidence Collection, Handling & Chain of Custody',          hours: '3.0' },
+  { seq: '07', title: 'Photography, Video & Digital Documentation',                hours: '3.0' },
+  { seq: '08', title: 'Interviewing Techniques & Statement Analysis',              hours: '3.0' },
+  { seq: '09', title: 'Record Research & Open-Source Intelligence',                hours: '3.0' },
+  { seq: '10', title: 'Skip Tracing & Asset Location Fundamentals',                hours: '3.0' },
+  { seq: '11', title: 'Background Investigation Methodology',                      hours: '3.0' },
+  { seq: '12', title: 'Domestic & Civil Investigations',                           hours: '3.0' },
+  { seq: '13', title: 'Workers\' Compensation & Insurance Fraud Investigations',   hours: '3.0' },
+  { seq: '14', title: 'Corporate & Internal Investigations',                       hours: '3.0' },
+  { seq: '15', title: 'Cyber Investigation Basics & Digital Evidence',             hours: '3.0' },
+  { seq: '16', title: 'Undercover Operations & Confidential Informants',           hours: '3.0' },
+  { seq: '17', title: 'Testifying as an Expert Witness',                           hours: '3.0' },
+  { seq: '18', title: 'Report Writing & Professional Documentation',               hours: '3.0' },
+  { seq: '19', title: 'Missing Persons & Fugitive Recovery (Boundaries)',          hours: '3.0' },
+  { seq: '20', title: 'Coordinating with Law Enforcement & Legal Counsel',         hours: '3.0' },
+  { seq: '21', title: 'Georgia Licensing: GBPDSA Title 43, Chapter 38',           hours: '3.0' },
+  { seq: '22', title: 'Case Management & Client Relations',                        hours: '3.0' },
+  { seq: '23', title: 'Scenario Practicum: Field Case Study',                      hours: '3.0' },
+  { seq: '24', title: 'Final Accreditation Examination',                           hours: '3.0' },
 ] as const;
 
 const MJM_MODULES = [
@@ -156,6 +183,43 @@ export default function CurriculumPage() {
               >
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--brass)', fontWeight: 600 }}>{m.seq}</span>
                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--ink)', fontWeight: parseInt(m.seq) === 16 ? 600 : 400 }}>{m.title}</span>
+                <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-dim)' }}>{m.hours}h</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Rule style={{ marginBottom: '48px', marginTop: '48px' }} />
+
+        {/* Module breakdown — Private Detective */}
+        <section>
+          <div className="curriculum-module-header">
+            <MonoLabel dot dotColor="var(--success)">Track III — Private Detective · 24 Modules</MonoLabel>
+            <MonoLabel size="xs">72 HRS ONLINE · $849</MonoLabel>
+          </div>
+          <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--success)', padding: '10px 16px', marginBottom: '24px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--success)', letterSpacing: '0.05em', lineHeight: 1.6, margin: 0 }}>
+              GEORGIA GBPDSA — All 72 hours completed online. Curriculum grounded in OCGA Title 43 Ch. 38, Title 16, Title 17, and applicable federal statutes. Minimum passing score: 70% per module.
+            </p>
+          </div>
+
+          <div style={{ border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div className="curriculum-mod-row" style={{ background: 'var(--bg-elev-2)', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Seq</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Module Title</span>
+              <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Hours</span>
+            </div>
+            {PI_MODULES.map((m, i) => (
+              <div
+                key={m.seq}
+                className="curriculum-mod-row"
+                style={{
+                  borderBottom: i < PI_MODULES.length - 1 ? '1px solid var(--border)' : 'none',
+                  background: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-elev-1)',
+                }}
+              >
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--success)', fontWeight: 600 }}>{m.seq}</span>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--ink)', fontWeight: m.seq === '24' ? 600 : 400 }}>{m.title}</span>
                 <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-dim)' }}>{m.hours}h</span>
               </div>
             ))}
