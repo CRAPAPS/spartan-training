@@ -36,7 +36,7 @@ const TRACK_LABEL: Record<string, string> = {
 const TRACK_COLOR: Record<string, string> = {
   'armed-security':    'var(--brass)',
   'private-detective': 'var(--success)',
-  'unarmed-security':  'var(--ink-dim)',
+  'unarmed-security':  '#6BA3BE',
 };
 
 const TRACK_MODULE_COUNT: Record<string, number> = {
@@ -48,7 +48,7 @@ const TRACK_MODULE_COUNT: Record<string, number> = {
 const AVAILABLE_TRACKS = [
   { id: 'armed-security',    label: 'Armed Security (16hr)',    active: true  },
   { id: 'private-detective', label: 'Private Detective (72hr)', active: true  },
-  { id: 'unarmed-security',  label: 'Unarmed Security (24hr)', active: false },
+  { id: 'unarmed-security',  label: 'Unarmed Security (24hr)', active: true  },
 ];
 
 const statusColor: Record<string, string> = {
@@ -318,6 +318,26 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '3px' }}>
                         {Array.from({ length: 24 }, (_, idx) => {
                           const modId = `PI-${String(idx + 1).padStart(2, '0')}`;
+                          const prog  = op.progressDetails.find(p => p.module_id === modId);
+                          const bg    = prog?.is_competent ? 'var(--success)' : (statusColor[prog?.status ?? 'not_started'] ?? 'var(--bg-elev-3)');
+                          return (
+                            <div key={modId} title={`${modId} — ${prog?.status ?? 'not_started'}${prog?.score != null ? ` (${prog.score}%)` : ''}`}
+                              style={{ height: '26px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', color: 'rgba(255,255,255,.7)', fontWeight: 700 }}>{String(idx + 1).padStart(2, '0')}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Unarmed Security grid */}
+                  {op.enrolledTracks.includes('unarmed-security') && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <MonoLabel size="xs" style={{ marginBottom: '5px', display: 'block', color: '#6BA3BE' }}>Unarmed Security — UAS-01–24</MonoLabel>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '3px' }}>
+                        {Array.from({ length: 24 }, (_, idx) => {
+                          const modId = `UAS-${String(idx + 1).padStart(2, '0')}`;
                           const prog  = op.progressDetails.find(p => p.module_id === modId);
                           const bg    = prog?.is_competent ? 'var(--success)' : (statusColor[prog?.status ?? 'not_started'] ?? 'var(--bg-elev-3)');
                           return (

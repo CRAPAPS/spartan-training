@@ -153,6 +153,24 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+
+        {/* Legal strip */}
+        <div style={{
+          borderTop: '1px solid var(--border)',
+          padding: '16px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}>
+          <MonoLabel size="xs">© {new Date().getFullYear()} Spartan Training LLC · All rights reserved · Georgia, USA</MonoLabel>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            <Link href="/privacy" style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--ink-dim)', textDecoration: 'none', letterSpacing: '0.06em' }}>
+              Privacy Policy
+            </Link>
+          </div>
+        </div>
       </footer>
     </div>
   );

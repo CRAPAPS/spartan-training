@@ -2,11 +2,18 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function signInAction(formData: FormData) {
+  const email = formData.get('email') as string;
+
+  if (!checkRateLimit(`signin:${email}`, 5, 15 * 60 * 1000)) {
+    redirect(`/sign-in?error=${encodeURIComponent('Too many sign-in attempts. Please wait 15 minutes.')}`);
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email:    formData.get('email') as string,
+    email,
     password: formData.get('password') as string,
   });
 

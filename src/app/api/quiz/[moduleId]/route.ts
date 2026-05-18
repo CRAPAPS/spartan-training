@@ -27,6 +27,18 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const answers: Record<string, string | null> = body.answers ?? {};
   const behavioralData: unknown = body.behavioralData ?? null;
 
+  function isValidBehavioralData(data: unknown): boolean {
+    if (data == null || !Array.isArray(data)) return true;
+    return data.every(e =>
+      e && typeof e === 'object' &&
+      typeof (e as Record<string, unknown>).type === 'string' &&
+      typeof (e as Record<string, unknown>).timestamp === 'string'
+    );
+  }
+  if (!isValidBehavioralData(behavioralData)) {
+    return NextResponse.json({ error: 'Invalid behavioral data' }, { status: 400 });
+  }
+
   // Fetch questions WITH correct answers (service role — never returned to browser)
   const { data: questions, error: qError } = await admin
     .from('quiz_questions')

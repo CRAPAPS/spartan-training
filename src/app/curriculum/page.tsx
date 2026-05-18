@@ -14,7 +14,7 @@ const TRACKS = [
   },
   {
     num: 'II', id: 'unarmed-security', title: 'Unarmed Security Officer',
-    hours: '24 hrs', hoursDetail: '24 hrs online', modules: 0, price: '$199', active: false,
+    hours: '24 hrs', hoursDetail: '24 hrs online', modules: 24, price: '$199', active: true,
     desc: 'Georgia GBPDSA-compliant unarmed security officer training covering professional conduct, conflict de-escalation, access control, incident documentation, and legal authority for unarmed personnel.',
     rangeNote: '',
     topics: ['Legal Authority & Limitations', 'Conflict De-escalation', 'Access Control', 'Incident Documentation', 'Georgia GBPDSA Compliance'],
@@ -74,6 +74,33 @@ const PI_MODULES = [
   { seq: '22', title: 'Case Management & Client Relations',                        hours: '3.0' },
   { seq: '23', title: 'Scenario Practicum: Field Case Study',                      hours: '3.0' },
   { seq: '24', title: 'Final Accreditation Examination',                           hours: '3.0' },
+] as const;
+
+const UAS_MODULES = [
+  { seq: '01', title: 'Role & Legal Authority of Unarmed Security Officers',        hours: '1.0' },
+  { seq: '02', title: 'GBPDSA Framework — OCGA Title 43, Chapter 38',               hours: '1.0' },
+  { seq: '03', title: 'Ethics & Professional Conduct',                               hours: '1.0' },
+  { seq: '04', title: 'Criminal & Civil Law for Security Officers',                  hours: '1.0' },
+  { seq: '05', title: 'Laws of Arrest — Citizen Arrest Authority (OCGA 17-4-60)',   hours: '1.0' },
+  { seq: '06', title: 'Search & Seizure Fundamentals',                               hours: '1.0' },
+  { seq: '07', title: 'Use of Force Continuum — Unarmed Officers',                  hours: '1.0' },
+  { seq: '08', title: 'De-escalation & Conflict Resolution',                         hours: '1.0' },
+  { seq: '09', title: 'Observation, Patrol & Situational Awareness',                hours: '1.0' },
+  { seq: '10', title: 'Access Control & Perimeter Security',                         hours: '1.0' },
+  { seq: '11', title: 'Report Writing & Documentation Standards',                    hours: '1.0' },
+  { seq: '12', title: 'Emergency Procedures — Fire, Medical & Evacuation',          hours: '1.0' },
+  { seq: '13', title: 'Terrorism Awareness & Suspicious Activity Reporting',        hours: '1.0' },
+  { seq: '14', title: 'Bomb Threats & Suspicious Package Protocols',                hours: '1.0' },
+  { seq: '15', title: 'Crime Prevention Through Environmental Design (CPTED)',      hours: '1.0' },
+  { seq: '16', title: 'Crowd Management & Public Assembly Security',                hours: '1.0' },
+  { seq: '17', title: 'Workplace Violence Prevention',                               hours: '1.0' },
+  { seq: '18', title: 'Incident Response & Scene Management',                       hours: '1.0' },
+  { seq: '19', title: 'Communications — Radios, Dispatch & Logs',                   hours: '1.0' },
+  { seq: '20', title: 'Trespass & Banning Procedures',                              hours: '1.0' },
+  { seq: '21', title: 'Traffic Control & Parking Enforcement',                       hours: '1.0' },
+  { seq: '22', title: 'Drug & Alcohol Awareness in the Workplace',                  hours: '1.0' },
+  { seq: '23', title: 'Customer Service & Professional Image',                       hours: '1.0' },
+  { seq: '24', title: 'Final Accreditation Examination',                             hours: '1.0' },
 ] as const;
 
 const MJM_MODULES = [
@@ -183,6 +210,43 @@ export default function CurriculumPage() {
               >
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--brass)', fontWeight: 600 }}>{m.seq}</span>
                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--ink)', fontWeight: parseInt(m.seq) === 16 ? 600 : 400 }}>{m.title}</span>
+                <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-dim)' }}>{m.hours}h</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Rule style={{ marginBottom: '48px', marginTop: '48px' }} />
+
+        {/* Module breakdown — Unarmed Security */}
+        <section>
+          <div className="curriculum-module-header">
+            <MonoLabel dot dotColor="var(--success)">Track II — Unarmed Security Officer · 24 Modules</MonoLabel>
+            <MonoLabel size="xs">24 HRS ONLINE · $199</MonoLabel>
+          </div>
+          <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid #6BA3BE', padding: '10px 16px', marginBottom: '24px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#6BA3BE', letterSpacing: '0.05em', lineHeight: 1.6, margin: 0 }}>
+              GEORGIA GBPDSA — All 24 hours completed online. Curriculum grounded in OCGA Title 43 Ch. 38, OCGA 17-4-60, OCGA 51-7-60, and GA Admin Code 509-3-.01. Minimum passing score: 75–85% per module.
+            </p>
+          </div>
+
+          <div style={{ border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div className="curriculum-mod-row" style={{ background: 'var(--bg-elev-2)', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Seq</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Module Title</span>
+              <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>Hours</span>
+            </div>
+            {UAS_MODULES.map((m, i) => (
+              <div
+                key={m.seq}
+                className="curriculum-mod-row"
+                style={{
+                  borderBottom: i < UAS_MODULES.length - 1 ? '1px solid var(--border)' : 'none',
+                  background: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-elev-1)',
+                }}
+              >
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#6BA3BE', fontWeight: 600 }}>{m.seq}</span>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--ink)', fontWeight: m.seq === '24' ? 600 : 400 }}>{m.title}</span>
                 <span className="curriculum-mod-hours" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-dim)' }}>{m.hours}h</span>
               </div>
             ))}

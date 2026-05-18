@@ -7,7 +7,7 @@ import { BrassButton } from '@/components/primitives/BrassButton';
 const ENROLLABLE_TRACKS = [
   { id: 'armed-security',    label: 'Armed Security Officer (16hr)',   active: true  },
   { id: 'private-detective', label: 'Private Detective (72hr)',         active: true  },
-  { id: 'unarmed-security',  label: 'Unarmed Security Officer (24hr)', active: false },
+  { id: 'unarmed-security',  label: 'Unarmed Security Officer (24hr)', active: true  },
 ];
 
 const PAYMENT_METHODS = [
@@ -17,7 +17,7 @@ const PAYMENT_METHODS = [
   { id: 'complimentary', label: 'Complimentary / Staff' },
 ];
 
-interface EnrollResult { operatorId: string; magicLink: string | null }
+interface EnrollResult { operatorId: string; magicLink: string | null; promoCode: string | null; discountApplied: number | null }
 
 interface EnrollOperatorFormProps { onSuccess?: () => void }
 
@@ -27,6 +27,7 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
   const [selectedTracks, setSelectedTracks] = useState<string[]>(['armed-security']);
   const [paymentMethod,  setPaymentMethod]  = useState('manual');
   const [notes,          setNotes]          = useState('');
+  const [promoCode,      setPromoCode]      = useState('');
   const [loading,        setLoading]        = useState(false);
   const [error,          setError]          = useState<string | null>(null);
   const [result,         setResult]         = useState<EnrollResult | null>(null);
@@ -46,7 +47,7 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
       const res = await fetch('/api/admin/operators', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, full_name: fullName, tracks: selectedTracks, payment_method: paymentMethod, notes }),
+        body:    JSON.stringify({ email, full_name: fullName, tracks: selectedTracks, payment_method: paymentMethod, notes, promo_code: promoCode || undefined }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Failed to enroll operator'); return; }
@@ -68,7 +69,7 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
 
   function reset() {
     setEmail(''); setFullName(''); setSelectedTracks(['armed-security']);
-    setPaymentMethod('manual'); setNotes(''); setResult(null); setError(null);
+    setPaymentMethod('manual'); setNotes(''); setPromoCode(''); setResult(null); setError(null);
   }
 
   const inputStyle: React.CSSProperties = {
@@ -94,6 +95,14 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
             <span style={monoLabel}>Email</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-dim)' }}>{email}</span>
           </div>
+          {result.promoCode && (
+            <div>
+              <span style={monoLabel}>Promo Applied</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--success)' }}>
+                {result.promoCode} — {result.discountApplied}% off
+              </span>
+            </div>
+          )}
         </div>
 
         {result.magicLink ? (
@@ -185,6 +194,17 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
           <label style={monoLabel}>Notes (optional)</label>
           <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. EFT ref #12345" style={inputStyle} />
         </div>
+      </div>
+
+      <div>
+        <label style={monoLabel}>Promo Code (optional)</label>
+        <input
+          type="text"
+          value={promoCode}
+          onChange={e => setPromoCode(e.target.value.toUpperCase())}
+          placeholder="e.g. MAKTRAIN25"
+          style={{ ...inputStyle, fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}
+        />
       </div>
 
       {error && (

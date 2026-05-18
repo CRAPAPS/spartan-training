@@ -1,6 +1,6 @@
 /**
  * narrate-all.mjs
- * Batch narration with 3-voice rotation: MOD-02 → MOD-16, PI-01 → PI-24
+ * Batch narration with 3-voice rotation: MOD-02→MOD-16, PI-01→PI-24, UAS-01→UAS-24
  *
  * Voice assignment:
  *   - Scenario slides  → Bella  (always, regardless of module)
@@ -13,10 +13,13 @@
  * PI base voice rotation (PI-01 = index 0):
  *   PI-01 Eric | PI-02 Bella | PI-03 Brian | PI-04 Eric | ...
  *
+ * UAS base voice rotation (UAS-01 = index 0):
+ *   UAS-01 Eric | UAS-02 Bella | UAS-03 Brian | UAS-04 Eric | ...
+ *
  * Usage:
- *   node narrate-all.mjs                         — skip slides already narrated
- *   node narrate-all.mjs --force                 — redo ALL slides
- *   node narrate-all.mjs --force MOD-03 PI-01    — force only listed modules
+ *   node narrate-all.mjs                               — skip slides already narrated
+ *   node narrate-all.mjs --force                       — redo ALL slides
+ *   node narrate-all.mjs --force MOD-03 PI-01 UAS-07   — force only listed modules
  *
  * Run from spartan-app/: node narrate-all.mjs
  */
@@ -40,8 +43,9 @@ const VOICE_BRIAN = 'nPczCjzI2devNBz1zQrb';   // Brian — checklists + MOD-04/0
 const MODULE_VOICES = ['Eric', 'Bella', 'Brian']; // cycling order
 const VOICE_MAP = { Eric: VOICE_ERIC, Bella: VOICE_BELLA, Brian: VOICE_BRIAN };
 
-const TRANSCRIPT_FILE    = path.join(__dirname, '..', 'SLIDE_TRANSCRIPTS_FOR_TTS.txt');
-const TRANSCRIPT_FILE_PI = path.join(__dirname, '..', 'SLIDE_TRANSCRIPTS_FOR_TTS_PI.txt');
+const TRANSCRIPT_FILE     = path.join(__dirname, '..', 'SLIDE_TRANSCRIPTS_FOR_TTS.txt');
+const TRANSCRIPT_FILE_PI  = path.join(__dirname, '..', 'SLIDE_TRANSCRIPTS_FOR_TTS_PI.txt');
+const TRANSCRIPT_FILE_UAS = path.join(__dirname, '..', 'SLIDE_TRANSCRIPTS_FOR_TTS_UAS.txt');
 
 const admin = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
 
@@ -50,6 +54,10 @@ function getModuleVoice(moduleId) {
   if (moduleId.startsWith('PI-')) {
     const num = parseInt(moduleId.replace('PI-', ''), 10);
     return MODULE_VOICES[(num - 1) % 3]; // PI-01=Eric, PI-02=Bella, PI-03=Brian
+  }
+  if (moduleId.startsWith('UAS-')) {
+    const num = parseInt(moduleId.replace('UAS-', ''), 10);
+    return MODULE_VOICES[(num - 1) % 3]; // UAS-01=Eric, UAS-02=Bella, UAS-03=Brian
   }
   // MOD-02 = index 0, MOD-03 = index 1, ... MOD-16 = index 14
   const num = parseInt(moduleId.replace('MOD-', ''), 10);
@@ -163,6 +171,7 @@ function parseTranscripts(filePath) {
     '[FILENAME:',
     'MODULE MOD-',
     'MODULE PI-',
+    'MODULE UAS-',
     '--- SLIDE',
   ];
 
@@ -178,7 +187,7 @@ function parseTranscripts(filePath) {
     const line = raw.trim();
     if (!line) continue;
 
-    const modMatch = line.match(/^MODULE ((?:MOD|PI)-\d+)/);
+    const modMatch = line.match(/^MODULE ((?:MOD|PI|UAS)-\d+)/);
     if (modMatch) {
       flushSlide();
       currentModule = modMatch[1];
@@ -210,20 +219,22 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 async function main() {
   const args = process.argv.slice(2);
   const forceFlag = args.includes('--force');
-  const forcedModules = args.filter(a => a.startsWith('MOD-') || a.startsWith('PI-'));
+  const forcedModules = args.filter(a => a.startsWith('MOD-') || a.startsWith('PI-') || a.startsWith('UAS-'));
 
   console.log('Spartan Training — Batch Narration with 3-Voice Rotation\n');
 
   const transcripts = parseTranscripts(TRANSCRIPT_FILE);
   if (fs.existsSync(TRANSCRIPT_FILE_PI)) {
-    const piTranscripts = parseTranscripts(TRANSCRIPT_FILE_PI);
-    Object.assign(transcripts, piTranscripts);
+    Object.assign(transcripts, parseTranscripts(TRANSCRIPT_FILE_PI));
+  }
+  if (fs.existsSync(TRANSCRIPT_FILE_UAS)) {
+    Object.assign(transcripts, parseTranscripts(TRANSCRIPT_FILE_UAS));
   }
 
   const allModules = Object.keys(transcripts)
     .filter(m => m !== 'MOD-01')
     .sort((a, b) => {
-      const prefix = s => s.startsWith('PI-') ? 1 : 0;
+      const prefix = s => s.startsWith('UAS-') ? 2 : s.startsWith('PI-') ? 1 : 0;
       if (prefix(a) !== prefix(b)) return prefix(a) - prefix(b);
       return a.localeCompare(b);
     });

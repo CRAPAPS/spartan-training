@@ -11,7 +11,9 @@ export async function middleware(request: NextRequest) {
   if (isDashboardRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/sign-in';
-    redirectUrl.searchParams.set('next', request.nextUrl.pathname);
+    const rawNext = request.nextUrl.pathname;
+    const safeNext = rawNext.startsWith('/') && !rawNext.includes('://') ? rawNext : '/dashboard';
+    redirectUrl.searchParams.set('next', safeNext);
     return NextResponse.redirect(redirectUrl);
   }
 

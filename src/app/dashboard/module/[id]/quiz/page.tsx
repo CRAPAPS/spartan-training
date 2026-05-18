@@ -20,26 +20,46 @@ export default async function ModuleQuizPage({ params }: QuizPageProps) {
   // Use admin client — publishable key breaks PostgREST queries
   const { data: module } = await supabaseAdmin
     .from('mjm_modules')
-    .select('id, title, passing_score, sequence_order, is_active')
+    .select('id, title, passing_score, sequence_order, is_active, track')
     .eq('id', id)
     .single();
 
   if (!module || !module.is_active) redirect('/dashboard?gate=blocked');
 
-  // Application-level sequential gate (mirrors module page gate)
+  // Application-level gates — mirrors module page
   const { data: operatorRow } = await supabaseAdmin
     .from('operators').select('role').eq('id', user.id).single();
   const role = (operatorRow as { role?: string } | null)?.role ?? 'agent';
   const isPrivileged = role === 'admin' || role === 'coordinator' || role === 'super_admin';
 
-  if (!isPrivileged && module.sequence_order > 1) {
-    const { data: prevProgress } = await supabaseAdmin
-      .from('operator_progress')
-      .select('is_competent')
+  // Enrollment gate — agent must be enrolled in this track to access any quiz
+  if (!isPrivileged) {
+    const { data: enrollment } = await supabaseAdmin
+      .from('operator_enrollments')
+      .select('id')
       .eq('operator_id', user.id)
-      .eq('module_id', `MOD-${String(module.sequence_order - 1).padStart(2, '0')}`)
+      .eq('track', module.track)
       .single();
-    if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
+    if (!enrollment) redirect('/dashboard?gate=not-enrolled');
+  }
+
+  // Track-aware sequential gate — fetch prev module by track + sequence_order
+  if (!isPrivileged && module.sequence_order > 1) {
+    const { data: prevModule } = await supabaseAdmin
+      .from('mjm_modules')
+      .select('id')
+      .eq('track', module.track)
+      .eq('sequence_order', module.sequence_order - 1)
+      .single();
+    if (prevModule) {
+      const { data: prevProgress } = await supabaseAdmin
+        .from('operator_progress')
+        .select('is_competent')
+        .eq('operator_id', user.id)
+        .eq('module_id', prevModule.id)
+        .single();
+      if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
+    }
   }
 
   // 24-hour cooldown: check for a recent critical fail on this module

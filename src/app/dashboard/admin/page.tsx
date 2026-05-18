@@ -69,6 +69,12 @@ export default async function AdminPage() {
     enrollmentMap[e.operator_id].push(e.track);
   });
 
+  // Promo codes
+  const { data: promoCodes } = await supabaseAdmin
+    .from('promo_codes')
+    .select('id, code, discount_type, discount_value, max_uses, uses_count, applicable_tracks, expires_at, is_active, notes, created_at')
+    .order('created_at', { ascending: false });
+
   // Audit log (last 200 entries)
   const { data: auditLog } = await supabaseAdmin
     .from('spartan_audit_log')
@@ -96,6 +102,7 @@ export default async function AdminPage() {
         criticalFails,
       }}
       enrollmentMap={enrollmentMap}
+      promoCodes={(promoCodes ?? []) as import('@/components/admin/PromoCodeManager').PromoCodeData[]}
     />
   );
 }

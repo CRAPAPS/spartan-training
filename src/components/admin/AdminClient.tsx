@@ -6,8 +6,9 @@ import { Rule } from '@/components/primitives/Rule';
 import { ModuleManager, type ModuleData } from './ModuleManager';
 import { OperatorRoster, type OperatorData } from './OperatorRoster';
 import { AuditLogViewer, type AuditEntry } from './AuditLogViewer';
+import { PromoCodeManager, type PromoCodeData } from './PromoCodeManager';
 
-type Tab = 'modules' | 'operators' | 'audit';
+type Tab = 'modules' | 'operators' | 'audit' | 'promo';
 
 interface AdminClientProps {
   modules: ModuleData[];
@@ -17,15 +18,17 @@ interface AdminClientProps {
   selfRole: string;
   stats: { totalOperators: number; totalCompetencies: number; criticalFails: number };
   enrollmentMap: Record<string, string[]>;
+  promoCodes: PromoCodeData[];
 }
 
-export function AdminClient({ modules, operators, auditLog, operatorMap, selfRole, stats, enrollmentMap }: AdminClientProps) {
+export function AdminClient({ modules, operators, auditLog, operatorMap, selfRole, stats, enrollmentMap, promoCodes }: AdminClientProps) {
   const [tab, setTab] = useState<Tab>('modules');
 
   const TABS: { id: Tab; label: string; count?: number }[] = [
-    { id: 'modules',   label: 'Modules',   count: modules.length },
-    { id: 'operators', label: 'Operators', count: operators.length },
-    { id: 'audit',     label: 'Audit Log', count: auditLog.length },
+    { id: 'modules',   label: 'Modules',     count: modules.length },
+    { id: 'operators', label: 'Operators',   count: operators.length },
+    { id: 'audit',     label: 'Audit Log',   count: auditLog.length },
+    { id: 'promo',     label: 'Promo Codes', count: promoCodes.length },
   ];
 
   return (
@@ -115,6 +118,7 @@ export function AdminClient({ modules, operators, auditLog, operatorMap, selfRol
         />
       )}
       {tab === 'audit' && <AuditLogViewer entries={auditLog} operatorMap={operatorMap} />}
+      {tab === 'promo' && <PromoCodeManager initialCodes={promoCodes} />}
     </div>
   );
 }
