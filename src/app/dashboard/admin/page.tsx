@@ -87,7 +87,7 @@ export default async function AdminPage() {
   );
 
   const totalCompetencies = (allProgress ?? []).filter((p: any) => p.is_competent).length;
-  const criticalFails = (auditLog ?? []).filter((e: any) => e.event === 'CRITICAL_FAIL').length;
+  const criticalFails = (auditLog ?? []).filter((e: any) => e.event === 'TACTICAL_RESET').length;
 
   return (
     <AdminClient

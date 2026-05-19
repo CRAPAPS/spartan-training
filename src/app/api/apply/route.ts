@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06
 
 const TRACK_PRICES: Record<string, string> = {
   'armed-security':       process.env.STRIPE_PRICE_ARMED_SECURITY!,
-  'private-investigation':process.env.STRIPE_PRICE_PI!,
+  'private-detective':    process.env.STRIPE_PRICE_PI!,
   'executive-protection': process.env.STRIPE_PRICE_EP!,
 };
 

@@ -28,7 +28,7 @@ export async function sendEnrollmentConfirmation(
   track:      string,
 ): Promise<void> {
   const trackLabel =
-    track === 'private-investigation' ? 'Private Detective (72hr)'
+    track === 'private-detective'      ? 'Private Detective (72hr)'
     : track === 'executive-protection' ? 'Executive Protection'
     : 'Armed Security Officer (16hr)';
 

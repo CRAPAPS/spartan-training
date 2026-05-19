@@ -42,6 +42,10 @@ export async function requestLoginLinkAction(formData: FormData) {
     redirect(`/sign-in?mode=link&error=${encodeURIComponent('Email address required')}`);
   }
 
+  if (!checkRateLimit(`magic:${email}`, 3, 10 * 60 * 1000)) {
+    redirect(`/sign-in?mode=link&error=${encodeURIComponent('Too many requests. Please wait 10 minutes.')}`);
+  }
+
   const supabase = await createClient();
   await supabase.auth.signInWithOtp({
     email,
