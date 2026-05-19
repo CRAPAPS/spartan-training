@@ -32,12 +32,23 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const body = await req.json().catch(() => ({}));
   const questionCount = Math.min(Math.max(Number(body.questionCount ?? 10), 5), 20);
 
-  const quiz = await generateModuleQuiz(
-    (module as any).id,
-    (module as any).title,
-    (module as any).passing_score ?? 80,
-    questionCount
-  );
+  let quiz;
+  try {
+    quiz = await generateModuleQuiz(
+      (module as any).id,
+      (module as any).title,
+      (module as any).passing_score ?? 80,
+      questionCount
+    );
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[generate-quiz] generateModuleQuiz failed:', msg);
+    return NextResponse.json({ error: `Quiz generation failed: ${msg}` }, { status: 500 });
+  }
+
+  if (!quiz?.questions?.length) {
+    return NextResponse.json({ error: 'Claude returned no questions' }, { status: 500 });
+  }
 
   // Remove any previous AI-generated questions for this module
   await supabaseAdmin

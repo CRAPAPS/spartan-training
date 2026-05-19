@@ -139,10 +139,13 @@ Return this exact JSON structure with no text before or after:
     messages: [{ role: 'user', content }],
   });
 
-  const text = message.content
+  const raw = message.content
     .filter(b => b.type === 'text')
     .map(b => (b as { type: 'text'; text: string }).text)
     .join('');
+
+  // Strip markdown code fences Claude occasionally emits despite instructions
+  const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
 
   return JSON.parse(text) as GeneratedQuiz;
 }
