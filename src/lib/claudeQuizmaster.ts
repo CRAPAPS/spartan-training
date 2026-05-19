@@ -134,7 +134,6 @@ Return this exact JSON structure with no text before or after:
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-7',
     max_tokens: 4096,
-    temperature: 0.4,
     system: SPARTAN_SYSTEM_PROMPT,
     messages: [{ role: 'user', content }],
   });
