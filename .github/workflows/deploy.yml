@@ -32,6 +32,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
 
       - name: Deploy to KVM via SSH
         uses: appleboy/ssh-action@v1
@@ -56,6 +57,10 @@ jobs:
             STRIPE_PRICE_PI=${{ secrets.STRIPE_PRICE_PI }}
             STRIPE_PRICE_EP=${{ secrets.STRIPE_PRICE_EP }}
             NEXTAUTH_URL=https://spartantraining.live
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+            SPARTAN_ADMIN_EMAIL=ciso@shelinfosec.com
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+            TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}
             SCORM_CLOUD_APP_ID=${{ secrets.SCORM_CLOUD_APP_ID }}
             SCORM_CLOUD_SECRET_KEY=${{ secrets.SCORM_CLOUD_SECRET_KEY }}
             SCORM_CLOUD_WEBHOOK_SECRET=${{ secrets.SCORM_CLOUD_WEBHOOK_SECRET }}
