@@ -4,14 +4,15 @@ import { Lockup } from '@/components/primitives/Lockup';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { Rule } from '@/components/primitives/Rule';
-import { signInAction } from '@/app/actions/auth';
+import { signInAction, requestLoginLinkAction } from '@/app/actions/auth';
 
 interface SignInPageProps {
-  searchParams: Promise<{ error?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; next?: string; mode?: string; sent?: string }>;
 }
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const { error } = await searchParams;
+  const { error, mode, sent } = await searchParams;
+  const isLinkMode = mode === 'link';
 
   return (
     <div
@@ -119,6 +120,46 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             <Link href="/apply" style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--ink-mute)', textDecoration: 'none', letterSpacing: '0.06em' }}>
               No file? Apply for accreditation →
             </Link>
+          </div>
+
+          {/* Magic link / passphrase toggle */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+            {!isLinkMode ? (
+              <div style={{ textAlign: 'center' }}>
+                <Link href="/sign-in?mode=link" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em', color: 'var(--ink-mute)', textDecoration: 'none', textTransform: 'uppercase' }}>
+                  No passphrase set? Request a login link →
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <MonoLabel size="xs">Request Login Link</MonoLabel>
+
+                {sent === '1' ? (
+                  <div style={{ padding: '10px 14px', background: 'rgba(107,142,90,.1)', border: '1px solid rgba(107,142,90,.3)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.16em', color: 'var(--success)', textTransform: 'uppercase' }}>
+                    If that email is registered, a login link has been sent. Check your inbox.
+                  </div>
+                ) : (
+                  <form action={requestLoginLinkAction} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div>
+                      <MonoLabel size="xs" style={{ marginBottom: '6px', display: 'block' }}>Email Address</MonoLabel>
+                      <input
+                        type="email" name="email" required autoComplete="email"
+                        style={{ width: '100%', padding: '10px 0', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-strong)', color: 'var(--ink)', fontFamily: 'var(--font-ui)', fontSize: '14px', outline: 'none' }}
+                      />
+                    </div>
+                    <BrassButton variant="ghost" size="sm" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
+                      Send Login Link ⤳
+                    </BrassButton>
+                  </form>
+                )}
+
+                <div style={{ textAlign: 'center' }}>
+                  <Link href="/sign-in" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em', color: 'var(--ink-mute)', textDecoration: 'none', textTransform: 'uppercase' }}>
+                    ← Back to passphrase login
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

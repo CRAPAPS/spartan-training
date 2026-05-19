@@ -147,9 +147,9 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
         </div>
       )}
 
-      <div style={{ border: '1px solid var(--border)' }}>
+      <div className="table-scroll" style={{ border: '1px solid var(--border)' }}>
         {/* Table header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 200px 120px 110px 120px', gap: '8px', padding: '8px 16px', background: 'var(--bg-elev-2)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 200px 120px 110px 120px', gap: '8px', padding: '8px 16px', background: 'var(--bg-elev-2)', borderBottom: '1px solid var(--border)', minWidth: '760px' }}>
           {['ID', 'Name', 'Email', 'Enrolled', 'Tracks', 'Role'].map(h => (
             <span key={h} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>{h}</span>
           ))}
@@ -176,6 +176,7 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
                   display: 'grid', gridTemplateColumns: '110px 1fr 200px 120px 110px 120px',
                   gap: '8px', padding: '12px 16px', alignItems: 'center', cursor: 'pointer',
                   background: isExpanded ? 'rgba(197,160,89,.03)' : i % 2 === 0 ? 'var(--bg)' : 'var(--bg-elev-1)',
+                  minWidth: '760px',
                 }}
                 onClick={() => setExpandedId(isExpanded ? null : op.id)}
               >

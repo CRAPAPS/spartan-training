@@ -6,42 +6,42 @@ import { Rule } from '@/components/primitives/Rule';
 
 const TRACKS = [
   {
-    num: 'I', id: 'armed-security', title: 'Armed Security Officer',
+    num: 'ALPHA', id: 'armed-security', title: 'Armed Security Officer',
     hours: '16 hrs', hoursDetail: '8 hrs online · 8 hrs range', modules: 16, price: '$249', active: true,
     desc: 'GBPDSA-compliant armed security officer training covering legal authority, use of force, firearms safety, and Georgia licensing requirements. Includes 8 hours of online classroom instruction and 8 hours of live-fire range qualification with a GA-licensed Firearms Instructor.',
     rangeNote: 'Range qualification required with a GBPDSA-licensed Firearms Instructor — minimum 80% to qualify.',
     topics: ['Legal Foundations & Use of Force', 'Firearms Safety & Handling', 'Threat Assessment', 'Emergency Response', 'Georgia GBPDSA Compliance', 'Final Accreditation Exam'],
   },
   {
-    num: 'II', id: 'unarmed-security', title: 'Unarmed Security Officer',
+    num: 'BRAVO', id: 'unarmed-security', title: 'Unarmed Security Officer',
     hours: '24 hrs', hoursDetail: '24 hrs online', modules: 24, price: '$199', active: true,
     desc: 'Georgia GBPDSA-compliant unarmed security officer training covering professional conduct, conflict de-escalation, access control, incident documentation, and legal authority for unarmed personnel.',
     rangeNote: '',
     topics: ['Legal Authority & Limitations', 'Conflict De-escalation', 'Access Control', 'Incident Documentation', 'Georgia GBPDSA Compliance'],
   },
   {
-    num: 'III', id: 'private-detective', title: 'Private Detective',
+    num: 'CHARLIE', id: 'private-detective', title: 'Private Detective',
     hours: '72 hrs', hoursDetail: '72 hrs online', modules: 24, price: '$849', active: true,
     desc: 'Comprehensive private investigation curriculum covering surveillance, evidence handling, legal authority, and investigative methodology under Georgia GBPDSA Title 43, Chapter 38.',
     rangeNote: '',
     topics: ['Surveillance Techniques', 'Evidence Documentation', 'Legal Authority & Boundaries', 'Report Writing', 'Digital Investigation Basics'],
   },
   {
-    num: 'IV', id: 'ethics-ceu', title: 'Professional Ethics (CEU)',
+    num: 'DELTA', id: 'ethics-ceu', title: 'Professional Ethics (CEU)',
     hours: 'CEU', hoursDetail: 'Required every 2 years', modules: 0, price: 'Coming Soon', active: false,
     desc: 'Georgia-required continuing education unit covering professional ethics, conduct standards, and legal obligations for licensed security and investigation professionals. Satisfies the GBPDSA 2-year Ethics CEU mandate.',
     rangeNote: '',
     topics: ['Professional Conduct Standards', 'Ethical Decision-Making', 'Legal Obligations', 'Disciplinary Procedures', 'GBPDSA Code of Ethics'],
   },
   {
-    num: 'V', id: 'anti-terrorism', title: 'Anti-Terrorism (CEU)',
+    num: 'ECHO', id: 'anti-terrorism', title: 'Anti-Terrorism (CEU)',
     hours: 'CEU', hoursDetail: 'Required every 2 years', modules: 0, price: 'Coming Soon', active: false,
     desc: 'Georgia-required continuing education unit covering terrorism awareness, threat recognition, protective response protocols, and coordination with law enforcement. Satisfies the GBPDSA 2-year Anti-Terrorism CEU mandate.',
     rangeNote: '',
     topics: ['Terrorism Awareness', 'Threat Indicator Recognition', 'Protective Response', 'Law Enforcement Coordination', 'Reporting Protocols'],
   },
   {
-    num: 'VI', id: 'executive-protection', title: 'Executive Protection',
+    num: 'FOXTROT', id: 'executive-protection', title: 'Executive Protection',
     hours: '24 hrs', hoursDetail: '24 hrs online', modules: 0, price: '$249', active: false,
     desc: 'Executive protection specialist training covering advance work, protective intelligence, motorcade operations, and dignitary security.',
     rangeNote: '',
@@ -183,7 +183,7 @@ export default function CurriculumPage() {
         {/* Module breakdown — Armed Security */}
         <section>
           <div className="curriculum-module-header">
-            <MonoLabel dot dotColor="var(--success)">Track I — Armed Security Officer · 16 Modules</MonoLabel>
+            <MonoLabel dot dotColor="var(--success)">ALPHA — Armed Security Officer · 16 Modules</MonoLabel>
             <MonoLabel size="xs">8 HRS ONLINE · 8 HRS RANGE · $249</MonoLabel>
           </div>
           <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--brass)', padding: '10px 16px', marginBottom: '24px' }}>
@@ -221,7 +221,7 @@ export default function CurriculumPage() {
         {/* Module breakdown — Unarmed Security */}
         <section>
           <div className="curriculum-module-header">
-            <MonoLabel dot dotColor="var(--success)">Track II — Unarmed Security Officer · 24 Modules</MonoLabel>
+            <MonoLabel dot dotColor="var(--success)">BRAVO — Unarmed Security Officer · 24 Modules</MonoLabel>
             <MonoLabel size="xs">24 HRS ONLINE · $199</MonoLabel>
           </div>
           <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid #6BA3BE', padding: '10px 16px', marginBottom: '24px' }}>
@@ -258,7 +258,7 @@ export default function CurriculumPage() {
         {/* Module breakdown — Private Detective */}
         <section>
           <div className="curriculum-module-header">
-            <MonoLabel dot dotColor="var(--success)">Track III — Private Detective · 24 Modules</MonoLabel>
+            <MonoLabel dot dotColor="var(--success)">CHARLIE — Private Detective · 24 Modules</MonoLabel>
             <MonoLabel size="xs">72 HRS ONLINE · $849</MonoLabel>
           </div>
           <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--success)', padding: '10px 16px', marginBottom: '24px' }}>

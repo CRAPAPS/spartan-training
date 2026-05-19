@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { Rule } from '@/components/primitives/Rule';
 import { BrassButton } from '@/components/primitives/BrassButton';
@@ -14,7 +14,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/sign-in');
 
-  const { data: operator } = await supabase
+  const { data: operator } = await supabaseAdmin
     .from('operators')
     .select('operator_id, full_name, email, track, enrolled_at, role')
     .eq('id', user.id)

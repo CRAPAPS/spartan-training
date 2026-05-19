@@ -71,7 +71,7 @@ export function AdminClient({ modules, operators, auditLog, operatorMap, selfRol
       <Rule />
 
       {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', gap: '0' }}>
+      <div className="admin-tab-bar">
         {TABS.map(t => (
           <button
             key={t.id}

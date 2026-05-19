@@ -36,6 +36,22 @@ export async function signOutAction() {
   redirect('/');
 }
 
+export async function requestLoginLinkAction(formData: FormData) {
+  const email = formData.get('email') as string;
+  if (!email) {
+    redirect(`/sign-in?mode=link&error=${encodeURIComponent('Email address required')}`);
+  }
+
+  const supabase = await createClient();
+  await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false },
+  });
+
+  // Always redirect to "sent" state — do not reveal whether account exists
+  redirect(`/sign-in?mode=link&sent=1`);
+}
+
 export async function updatePasswordAction(formData: FormData) {
   const password        = formData.get('password') as string;
   const confirmPassword = formData.get('confirm_password') as string;
