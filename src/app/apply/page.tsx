@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import { Lockup } from '@/components/primitives/Lockup';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
@@ -115,6 +116,13 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
             </p>
           </div>
 
+          <div
+            className="cf-turnstile"
+            data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            data-theme="dark"
+            style={{ margin: '4px 0' }}
+          />
+
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <BrassButton type="submit" variant="primary" size="lg">
               Proceed to Secure Payment ⤳
@@ -125,6 +133,8 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
           </div>
 
         </form>
+
+        <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
       </div>
     </div>
   );

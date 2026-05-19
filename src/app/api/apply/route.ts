@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
 
@@ -12,6 +13,14 @@ const TRACK_PRICES: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   const formData   = await req.formData();
+
+  const turnstileToken = formData.get('cf-turnstile-response') as string | null;
+  if (!await verifyTurnstile(turnstileToken)) {
+    return NextResponse.redirect(
+      new URL(`/apply?error=${encodeURIComponent('Security check failed. Please try again.')}`, req.url)
+    );
+  }
+
   const email      = formData.get('email') as string;
   const fullName   = formData.get('full_name') as string;
   const track      = formData.get('track') as string ?? 'armed-security';

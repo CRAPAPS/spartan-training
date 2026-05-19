@@ -3,9 +3,15 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 export async function signInAction(formData: FormData) {
   const email = formData.get('email') as string;
+
+  const turnstileToken = formData.get('cf-turnstile-response') as string | null;
+  if (!await verifyTurnstile(turnstileToken)) {
+    redirect(`/sign-in?error=${encodeURIComponent('Security check failed. Please try again.')}`);
+  }
 
   if (!checkRateLimit(`signin:${email}`, 5, 15 * 60 * 1000)) {
     redirect(`/sign-in?error=${encodeURIComponent('Too many sign-in attempts. Please wait 15 minutes.')}`);

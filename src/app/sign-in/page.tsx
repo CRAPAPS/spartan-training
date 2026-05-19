@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { Lockup } from '@/components/primitives/Lockup';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
@@ -100,10 +101,19 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
               />
             </div>
 
+            <div
+              className="cf-turnstile"
+              data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+              data-theme="dark"
+              style={{ margin: '4px 0' }}
+            />
+
             <BrassButton variant="primary" size="md" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
               Issue Credential ⤳
             </BrassButton>
           </form>
+
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
 
           <div style={{ textAlign: 'center' }}>
             <Link href="/apply" style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--ink-mute)', textDecoration: 'none', letterSpacing: '0.06em' }}>
