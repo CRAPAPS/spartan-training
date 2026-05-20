@@ -46,10 +46,14 @@ export async function requestLoginLinkAction(formData: FormData) {
     redirect(`/sign-in?mode=link&error=${encodeURIComponent('Too many requests. Please wait 10 minutes.')}`);
   }
 
+  const siteUrl = process.env.NEXTAUTH_URL ?? 'https://spartantraining.live';
   const supabase = await createClient();
   await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: false },
+    options: {
+      shouldCreateUser: false,
+      emailRedirectTo:  `${siteUrl}/auth/callback`,
+    },
   });
 
   // Always redirect to "sent" state — do not reveal whether account exists

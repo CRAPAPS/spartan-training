@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
-import { sendEnrollmentConfirmation } from '@/lib/email';
+import { sendEnrollmentConfirmation, sendMagicLinkEmail } from '@/lib/email';
 
 const VALID_TRACKS  = ['armed-security', 'private-detective', 'unarmed-security'];
 const VALID_PAYMENT = ['stripe', 'manual', 'eft', 'cash', 'complimentary'];
@@ -134,19 +134,28 @@ export async function POST(req: NextRequest) {
       .eq('id', promoCodeRow.id);
   }
 
-  // Generate magic link for admin to share
+  // Generate magic link — redirectTo must point to the auth callback route
+  const siteUrl = process.env.NEXTAUTH_URL ?? 'https://spartantraining.live';
   const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
     type:  'magiclink',
     email,
+    options: { redirectTo: `${siteUrl}/auth/callback` },
   });
   const magicLink = (linkData as { properties?: { action_link?: string } } | null)
     ?.properties?.action_link ?? null;
 
-  // Enrollment confirmation email (silent if RESEND_API_KEY not set)
+  // Send enrollment confirmation, then the login link (both best-effort)
   try {
     await sendEnrollmentConfirmation(email, full_name, operatorId, tracks[0]);
   } catch {
     // best-effort
+  }
+  if (magicLink) {
+    try {
+      await sendMagicLinkEmail(email, full_name, magicLink);
+    } catch {
+      // best-effort
+    }
   }
 
   // Audit

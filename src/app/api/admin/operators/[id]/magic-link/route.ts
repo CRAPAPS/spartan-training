@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
+import { sendMagicLinkEmail } from '@/lib/email';
 
 interface RouteContext { params: Promise<{ id: string }> }
 
@@ -18,17 +19,30 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
   }
 
   const { data: op } = await supabaseAdmin
-    .from('operators').select('email').eq('id', id).single();
+    .from('operators').select('email, full_name').eq('id', id).single();
   if (!op) return NextResponse.json({ error: 'Operator not found' }, { status: 404 });
 
+  const { email, full_name } = op as { email: string; full_name: string };
+
+  const siteUrl = process.env.NEXTAUTH_URL ?? 'https://spartantraining.live';
   const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
     type:  'magiclink',
-    email: (op as { email: string }).email,
+    email,
+    options: { redirectTo: `${siteUrl}/auth/callback` },
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const magicLink = (linkData as { properties?: { action_link?: string } } | null)
     ?.properties?.action_link ?? null;
 
-  return NextResponse.json({ magicLink });
+  // Email the link directly to the operator (best-effort)
+  if (magicLink) {
+    try {
+      await sendMagicLinkEmail(email, full_name, magicLink);
+    } catch {
+      // best-effort
+    }
+  }
+
+  return NextResponse.json({ magicLink, emailed: !!magicLink });
 }
