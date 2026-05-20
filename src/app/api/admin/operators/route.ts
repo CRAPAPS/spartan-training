@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
   const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
     type:  'magiclink',
     email,
-    options: { redirectTo: 'https://spartantraining.live/auth/callback' },
+    options: { redirectTo: 'https://spartantraining.live/auth/confirm' },
   });
   const magicLink = (linkData as { properties?: { action_link?: string } } | null)
     ?.properties?.action_link ?? null;

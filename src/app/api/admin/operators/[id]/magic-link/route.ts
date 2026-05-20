@@ -27,7 +27,7 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
   const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
     type:  'magiclink',
     email,
-    options: { redirectTo: 'https://spartantraining.live/auth/callback' },
+    options: { redirectTo: 'https://spartantraining.live/auth/confirm' },
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

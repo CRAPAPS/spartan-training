@@ -51,7 +51,7 @@ export async function requestLoginLinkAction(formData: FormData) {
     email,
     options: {
       shouldCreateUser: false,
-      emailRedirectTo:  'https://spartantraining.live/auth/callback',
+      emailRedirectTo:  'https://spartantraining.live/auth/confirm',
     },
   });
 
