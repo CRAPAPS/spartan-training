@@ -50,12 +50,11 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: 'Claude returned no questions' }, { status: 500 });
   }
 
-  // Remove any previous AI-generated questions for this module
+  // Replace all existing questions for this module
   await supabaseAdmin
     .from('quiz_questions')
     .delete()
-    .eq('module_id', moduleId)
-    .like('id', `${moduleId.toLowerCase()}-q%`);
+    .eq('module_id', moduleId);
 
   const rows = quiz.questions.map((q, idx) => ({
     id:          `${moduleId.toLowerCase()}-q${String(idx + 1).padStart(2, '0')}`,
