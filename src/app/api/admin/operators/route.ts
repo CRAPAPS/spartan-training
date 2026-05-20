@@ -134,12 +134,11 @@ export async function POST(req: NextRequest) {
       .eq('id', promoCodeRow.id);
   }
 
-  // Generate magic link — redirectTo must point to the auth callback route
-  const siteUrl = process.env.NEXTAUTH_URL ?? 'https://spartantraining.live';
+  // Generate magic link — always use production URL regardless of where admin panel is running
   const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
     type:  'magiclink',
     email,
-    options: { redirectTo: `${siteUrl}/auth/callback` },
+    options: { redirectTo: 'https://spartantraining.live/auth/callback' },
   });
   const magicLink = (linkData as { properties?: { action_link?: string } } | null)
     ?.properties?.action_link ?? null;

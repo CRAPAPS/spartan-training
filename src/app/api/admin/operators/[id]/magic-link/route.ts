@@ -24,11 +24,10 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
 
   const { email, full_name } = op as { email: string; full_name: string };
 
-  const siteUrl = process.env.NEXTAUTH_URL ?? 'https://spartantraining.live';
   const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
     type:  'magiclink',
     email,
-    options: { redirectTo: `${siteUrl}/auth/callback` },
+    options: { redirectTo: 'https://spartantraining.live/auth/callback' },
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
