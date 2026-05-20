@@ -69,6 +69,7 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
   const [saveLoading,    setSaveLoading]   = useState(false);
   const [magicLinks,     setMagicLinks]    = useState<Record<string, string>>({});
   const [linkLoading,    setLinkLoading]   = useState<string | null>(null);
+  const [copiedId,       setCopiedId]      = useState<string | null>(null);
 
   const isPrivileged = ['super_admin', 'coordinator', 'admin'].includes(selfRole);
 
@@ -277,9 +278,14 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
                         {shownLink ? (
                           <>
                             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--ink-dim)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shownLink}</span>
-                            <button onClick={() => navigator.clipboard.writeText(shownLink)}
-                              style={{ padding: '3px 8px', background: 'var(--bg-elev-2)', border: '1px solid var(--border)', color: 'var(--brass)', fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
-                              Copy
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(shownLink);
+                                setCopiedId(op.id);
+                                setTimeout(() => setCopiedId(null), 2000);
+                              }}
+                              style={{ padding: '3px 8px', background: copiedId === op.id ? 'rgba(80,200,120,.15)' : 'var(--bg-elev-2)', border: `1px solid ${copiedId === op.id ? 'var(--success)' : 'var(--border)'}`, color: copiedId === op.id ? 'var(--success)' : 'var(--brass)', fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.15s' }}>
+                              {copiedId === op.id ? 'Copied ✓' : 'Copy'}
                             </button>
                           </>
                         ) : (
