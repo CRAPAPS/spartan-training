@@ -26,6 +26,11 @@ export async function sendMagicLinkEmail(
   fullName:  string,
   magicLink: string,
 ): Promise<void> {
+  // Wrap in our interstitial so email security scanners (Defender, Mimecast, etc.)
+  // can't consume the single-use Supabase token by pre-fetching the raw link.
+  const encodedLink = Buffer.from(magicLink).toString('base64');
+  const verifyUrl   = `https://spartantraining.live/auth/verify?next=${encodedLink}`;
+
   await sendEmail(
     email,
     'Spartan Training — Your Login Link',
@@ -50,11 +55,11 @@ export async function sendMagicLinkEmail(
             <table cellpadding="0" cellspacing="0" style="margin:28px 0;">
               <tr>
                 <td style="background:#C5A059;border-radius:3px;">
-                  <a href="${magicLink}" style="display:inline-block;padding:14px 32px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0A0907;text-decoration:none;">Access Dashboard</a>
+                  <a href="${verifyUrl}" style="display:inline-block;padding:14px 32px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0A0907;text-decoration:none;">Access Dashboard</a>
                 </td>
               </tr>
             </table>
-            <p style="color:#6A6460;font-size:12px;line-height:1.6;margin:0;">If the button does not work, copy and paste this link into your browser:<br/><span style="color:#B8B0A0;word-break:break-all;">${magicLink}</span></p>
+            <p style="color:#6A6460;font-size:12px;line-height:1.6;margin:0;">If the button does not work, copy and paste this address into your browser:<br/><span style="color:#B8B0A0;word-break:break-all;">${verifyUrl}</span></p>
             <p style="color:#6A6460;font-size:12px;line-height:1.6;margin:16px 0 0;">After first login, go to <strong style="color:#B8B0A0;">Settings</strong> to set a passphrase for future sign-ins.</p>
           </td>
         </tr>
