@@ -143,6 +143,13 @@ export async function POST(req: NextRequest) {
   const magicLink = (linkData as { properties?: { action_link?: string } } | null)
     ?.properties?.action_link ?? null;
 
+  // Wrap the raw Supabase URL in our scanner-safe interstitial before emailing or returning.
+  // The raw action_link must never leave the server — if it reaches an email client,
+  // the recipient's scanner can pre-fetch and burn the single-use token.
+  const wrappedLink = magicLink
+    ? `https://spartantraining.live/auth/verify?next=${Buffer.from(magicLink).toString('base64')}`
+    : null;
+
   // Send enrollment confirmation, then the login link (both best-effort)
   try {
     await sendEnrollmentConfirmation(email, full_name, operatorId, tracks[0]);
@@ -164,5 +171,5 @@ export async function POST(req: NextRequest) {
     metadata:    { method: 'manual', tracks, payment_method, enrolled_by: user.id },
   });
 
-  return NextResponse.json({ operatorId, magicLink, promoCode: normalizedCode, discountApplied });
+  return NextResponse.json({ operatorId, magicLink: wrappedLink, promoCode: normalizedCode, discountApplied });
 }

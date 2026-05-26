@@ -107,7 +107,7 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
 
         {result.magicLink ? (
           <div style={{ marginBottom: '16px' }}>
-            <span style={monoLabel}>Sign-in Link — share with student (expires 24h)</span>
+            <span style={monoLabel}>Sign-in Link — send to student (expires 1hr)</span>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
               <div style={{ flex: 1, background: 'var(--bg-elev-2)', border: '1px solid var(--border)', padding: '8px 10px', overflow: 'hidden' }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-dim)', wordBreak: 'break-all' }}>
