@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [modulesResult, progressResult, operatorResult] = await Promise.all([
+  const [modulesResult, progressResult, operatorResult, enrollmentsResult] = await Promise.all([
     supabaseAdmin
       .from('mjm_modules')
       .select('id, title, track, sequence_order')
@@ -21,14 +21,22 @@ export default async function DashboardPage() {
       .eq('operator_id', user.id),
     supabaseAdmin
       .from('operators')
-      .select('full_name, operator_id')
+      .select('full_name, operator_id, role')
       .eq('id', user.id)
       .single(),
+    supabaseAdmin
+      .from('operator_enrollments')
+      .select('track')
+      .eq('operator_id', user.id),
   ]);
 
-  const visibleModules = modulesResult.data;
-  const progressRows   = progressResult.data;
-  const operator       = operatorResult.data;
+  const operatorData = operatorResult.data as { full_name: string; operator_id: string; role?: string } | null;
+  const isPrivileged = ['admin', 'coordinator', 'super_admin'].includes(operatorData?.role ?? '');
+  const enrolledTracks = new Set((enrollmentsResult.data ?? []).map((e: { track: string }) => e.track));
+  const allModules = modulesResult.data ?? [];
+  const visibleModules = isPrivileged ? allModules : allModules.filter(m => enrolledTracks.has(m.track));
+  const progressRows = progressResult.data;
+  const operator     = operatorData;
 
   const progressMap = Object.fromEntries(
     (progressRows ?? []).map(p => [p.module_id, p])
@@ -50,7 +58,7 @@ export default async function DashboardPage() {
   });
 
   const totalModules   = (visibleModules ?? []).length;
-  const completedCount = (progressRows ?? []).filter(p => p.is_competent).length;
+  const completedCount = (progressRows ?? []).filter(p => p.is_competent && visibleIds.has(p.module_id)).length;
   const totalHours     = completedCount * 1;
   const activeModules  = (progressRows ?? []).filter(p => p.status === 'in_progress').length;
   const overallPct     = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;

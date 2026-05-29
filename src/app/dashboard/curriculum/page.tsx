@@ -26,7 +26,7 @@ export default async function CurriculumDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/sign-in');
 
-  const [modulesResult, operatorResult, progressResult] = await Promise.all([
+  const [modulesResult, operatorResult, progressResult, enrollmentsResult] = await Promise.all([
     supabaseAdmin
       .from('mjm_modules')
       .select('id, title, track, sequence_order, passing_score, duration_hours')
@@ -41,10 +41,15 @@ export default async function CurriculumDashboardPage() {
       .from('operator_progress')
       .select('module_id, status, is_competent, score, attempts, completed_at')
       .eq('operator_id', user.id),
+    supabaseAdmin
+      .from('operator_enrollments')
+      .select('track')
+      .eq('operator_id', user.id),
   ]);
 
   const role = (operatorResult.data as { role?: string } | null)?.role ?? 'agent';
   const isPrivileged = role === 'admin' || role === 'coordinator' || role === 'super_admin';
+  const enrolledTracks = new Set((enrollmentsResult.data ?? []).map((e: { track: string }) => e.track));
 
   const progressMap = Object.fromEntries(
     (progressResult.data ?? []).map(p => [p.module_id, p])
@@ -71,7 +76,9 @@ export default async function CurriculumDashboardPage() {
     }
   }
 
-  const tracksToRender = TRACK_ORDER.filter(t => trackMap.has(t));
+  const tracksToRender = TRACK_ORDER.filter(t =>
+    trackMap.has(t) && (isPrivileged || enrolledTracks.has(t))
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
