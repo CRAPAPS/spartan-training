@@ -70,6 +70,10 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
   const [magicLinks,     setMagicLinks]    = useState<Record<string, string>>({});
   const [linkLoading,    setLinkLoading]   = useState<string | null>(null);
   const [copiedId,       setCopiedId]      = useState<string | null>(null);
+  const [pwById,         setPwById]        = useState<Record<string, string>>({});
+  const [pwLoading,      setPwLoading]     = useState<string | null>(null);
+  const [pwCopiedId,     setPwCopiedId]    = useState<string | null>(null);
+  const [pwCustom,       setPwCustom]      = useState<Record<string, string>>({});
 
   const isPrivileged = ['super_admin', 'coordinator', 'admin'].includes(selfRole);
 
@@ -118,6 +122,32 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
       if (data.magicLink) setMagicLinks(prev => ({ ...prev, [operatorId]: data.magicLink }));
       else alert(data.error ?? 'Failed to generate link');
     } finally { setLinkLoading(null); }
+  }
+
+  async function setPassword(operatorId: string) {
+    setPwLoading(operatorId);
+    try {
+      const custom = (pwCustom[operatorId] ?? '').trim();
+      const res = await fetch(`/api/admin/operators/${operatorId}/password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(custom ? { password: custom } : {}),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Failed to set password'); return; }
+      setPwById(prev => ({ ...prev, [operatorId]: data.password as string }));
+    } finally { setPwLoading(null); }
+  }
+
+  function copyLoginDetails(email: string, password: string, operatorId: string) {
+    const block =
+      `Spartan Training — your login\n` +
+      `Sign in: https://spartantraining.live/sign-in\n` +
+      `Email: ${email}\n` +
+      `Password: ${password}\n` +
+      `(You can change this in Settings after you log in.)`;
+    navigator.clipboard.writeText(block);
+    setPwCopiedId(operatorId);
+    setTimeout(() => setPwCopiedId(null), 2000);
   }
 
   return (
@@ -297,6 +327,43 @@ export function OperatorRoster({ operators, selfRole }: { operators: OperatorDat
                       </div>
                     )}
                   </div>
+
+                  {/* Set / reset password */}
+                  {isPrivileged && (
+                    <div style={{ marginBottom: '12px', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg-elev-1)' }}>
+                      {pwById[op.id] ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
+                            Password set — send to student (does not expire)
+                          </span>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--brass)', letterSpacing: '0.08em' }}>{pwById[op.id]}</span>
+                            <button
+                              onClick={() => copyLoginDetails(op.email, pwById[op.id], op.id)}
+                              style={{ padding: '4px 10px', background: pwCopiedId === op.id ? 'rgba(80,200,120,.15)' : 'var(--bg-elev-2)', border: `1px solid ${pwCopiedId === op.id ? 'var(--success)' : 'var(--border)'}`, color: pwCopiedId === op.id ? 'var(--success)' : 'var(--brass)', fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                              {pwCopiedId === op.id ? 'Copied ✓' : 'Copy Login Details'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <input
+                            type="text"
+                            value={pwCustom[op.id] ?? ''}
+                            onChange={e => setPwCustom(prev => ({ ...prev, [op.id]: e.target.value }))}
+                            placeholder="optional — type your own"
+                            style={{ flex: '1 1 180px', background: 'var(--bg-elev-2)', border: '1px solid var(--border)', color: 'var(--ink)', fontFamily: 'var(--font-mono)', fontSize: '11px', padding: '6px 8px', outline: 'none' }}
+                          />
+                          <button
+                            onClick={() => setPassword(op.id)}
+                            disabled={pwLoading === op.id}
+                            style={{ padding: '6px 12px', background: 'transparent', border: '1px solid rgba(197,160,89,.4)', color: 'var(--brass)', fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                            {pwLoading === op.id ? 'Setting…' : 'Set Password'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Armed Security grid */}
                   {(op.enrolledTracks.includes('armed-security') || op.enrolledTracks.length === 0) && (
