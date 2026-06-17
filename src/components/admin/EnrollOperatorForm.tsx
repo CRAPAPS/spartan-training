@@ -17,7 +17,7 @@ const PAYMENT_METHODS = [
   { id: 'complimentary', label: 'Complimentary / Staff' },
 ];
 
-interface EnrollResult { operatorId: string; magicLink: string | null; promoCode: string | null; discountApplied: number | null }
+interface EnrollResult { operatorId: string; email: string; password: string; promoCode: string | null; discountApplied: number | null }
 
 interface EnrollOperatorFormProps { onSuccess?: () => void }
 
@@ -60,9 +60,15 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
     }
   }
 
-  async function copyLink() {
-    if (!result?.magicLink) return;
-    await navigator.clipboard.writeText(result.magicLink);
+  async function copyDetails() {
+    if (!result) return;
+    const block =
+      `Spartan Training — your login\n` +
+      `Sign in: https://spartantraining.live/sign-in\n` +
+      `Email: ${result.email}\n` +
+      `Password: ${result.password}\n` +
+      `(You can change this in Settings after you log in.)`;
+    await navigator.clipboard.writeText(block);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }
@@ -105,37 +111,32 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
           )}
         </div>
 
-        {result.magicLink ? (
-          <div style={{ marginBottom: '16px' }}>
-            <span style={monoLabel}>Sign-in Link — send to student (expires 1hr)</span>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-              <div style={{ flex: 1, background: 'var(--bg-elev-2)', border: '1px solid var(--border)', padding: '8px 10px', overflow: 'hidden' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-dim)', wordBreak: 'break-all' }}>
-                  {result.magicLink}
-                </span>
-              </div>
-              <button
-                onClick={copyLink}
-                style={{
-                  flexShrink: 0, padding: '8px 14px',
-                  background: copied ? 'var(--success)' : 'var(--bg-elev-2)',
-                  border: '1px solid var(--border)',
-                  color: copied ? '#fff' : 'var(--brass)',
-                  fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.12em',
-                  textTransform: 'uppercase', cursor: 'pointer', transition: 'background 200ms',
-                }}
-              >
-                {copied ? 'Copied ✓' : 'Copy'}
-              </button>
+        <div style={{ marginBottom: '16px' }}>
+          <span style={monoLabel}>Temporary Password — send to student (does not expire)</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+            <div style={{ flex: 1, background: 'var(--bg-elev-2)', border: '1px solid var(--border)', padding: '8px 10px', overflow: 'hidden' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--brass)', letterSpacing: '0.08em', wordBreak: 'break-all' }}>
+                {result.password}
+              </span>
             </div>
+            <button
+              onClick={copyDetails}
+              style={{
+                flexShrink: 0, padding: '8px 14px',
+                background: copied ? 'var(--success)' : 'var(--bg-elev-2)',
+                border: '1px solid var(--border)',
+                color: copied ? '#fff' : 'var(--brass)',
+                fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.12em',
+                textTransform: 'uppercase', cursor: 'pointer', transition: 'background 200ms',
+              }}
+            >
+              {copied ? 'Copied ✓' : 'Copy Login Details'}
+            </button>
           </div>
-        ) : (
-          <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'var(--bg-elev-2)', border: '1px solid var(--border)' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-mute)' }}>
-              Magic link unavailable — student can sign in at spartantraining.live with their email.
-            </span>
-          </div>
-        )}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--ink-mute)', marginTop: '6px', display: 'block' }}>
+            “Copy Login Details” copies the sign-in URL, email, and password as a ready-to-send message.
+          </span>
+        </div>
 
         <button
           onClick={reset}
@@ -218,7 +219,7 @@ export function EnrollOperatorForm({ onSuccess }: EnrollOperatorFormProps) {
           {loading ? 'Enrolling…' : 'Enroll Operator ⤳'}
         </BrassButton>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--ink-mute)' }}>
-          A sign-in link will be generated for you to share with the student.
+          A permanent password will be generated for you to share with the student.
         </span>
       </div>
     </form>
