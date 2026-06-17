@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
-import { sendEnrollmentConfirmation, sendMagicLinkEmail } from '@/lib/email';
+import { sendEnrollmentConfirmation } from '@/lib/email';
+import { generateOperatorPassword } from '@/lib/password';
 
 const VALID_TRACKS  = ['armed-security', 'private-detective', 'unarmed-security'];
 const VALID_PAYMENT = ['stripe', 'manual', 'eft', 'cash', 'complimentary'];
@@ -74,9 +75,11 @@ export async function POST(req: NextRequest) {
     discountApplied = codeData.discount_value as number;
   }
 
-  // Create Supabase auth user
+  // Create Supabase auth user WITH a permanent password (no magic link needed).
+  const password = generateOperatorPassword();
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email,
+    password,
     email_confirm: true,
   });
   if (authError) {
@@ -134,34 +137,11 @@ export async function POST(req: NextRequest) {
       .eq('id', promoCodeRow.id);
   }
 
-  // Generate magic link — always use production URL regardless of where admin panel is running
-  const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
-    type:  'magiclink',
-    email,
-    options: { redirectTo: 'https://spartantraining.live/auth/confirm' },
-  });
-  const magicLink = (linkData as { properties?: { action_link?: string } } | null)
-    ?.properties?.action_link ?? null;
-
-  // Wrap the raw Supabase URL in our scanner-safe interstitial before emailing or returning.
-  // The raw action_link must never leave the server — if it reaches an email client,
-  // the recipient's scanner can pre-fetch and burn the single-use token.
-  const wrappedLink = magicLink
-    ? `https://spartantraining.live/auth/verify?next=${Buffer.from(magicLink).toString('base64')}`
-    : null;
-
-  // Send enrollment confirmation, then the login link (both best-effort)
+  // Send enrollment confirmation (best-effort). No credentials are emailed.
   try {
     await sendEnrollmentConfirmation(email, full_name, operatorId, tracks[0]);
   } catch {
     // best-effort
-  }
-  if (magicLink) {
-    try {
-      await sendMagicLinkEmail(email, full_name, magicLink);
-    } catch {
-      // best-effort
-    }
   }
 
   // Audit
@@ -171,5 +151,5 @@ export async function POST(req: NextRequest) {
     metadata:    { method: 'manual', tracks, payment_method, enrolled_by: user.id },
   });
 
-  return NextResponse.json({ operatorId, magicLink: wrappedLink, promoCode: normalizedCode, discountApplied });
+  return NextResponse.json({ operatorId, email, password, promoCode: normalizedCode, discountApplied });
 }
