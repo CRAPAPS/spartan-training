@@ -84,9 +84,12 @@ jobs:
             docker image prune -f
 
 # ─── REQUIRED GITHUB SECRETS ──────────────────────────────────────────────────
-# KVM_HOST                        — KVM IP address
+# KVM_HOST                        — KVM IP address (2.24.73.222)
 # KVM_USER                        — SSH user (root)
-# KVM_SSH_KEY                     — Private SSH key (full key including header/footer)
+# KVM_PASSWORD                    — SSH password (this workflow uses password auth — see `password:` above)
+#   NOTE: a KVM_SSH_KEY secret also exists but is NOT used by this workflow. To switch to
+#   key-based auth, replace `password:` with `key: ${{ secrets.KVM_SSH_KEY }}` and verify the
+#   key is in the server's authorized_keys before relying on it.
 # NEXT_PUBLIC_SUPABASE_URL        — https://zlblxrxirhmolkzbfxva.supabase.co
 # NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 # SUPABASE_SERVICE_ROLE_KEY
