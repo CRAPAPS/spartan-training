@@ -1,0 +1,27 @@
+name: Supabase Keep-Alive
+
+# Prevents free-tier auto-pause (7 days of no API activity paused the project
+# on 2026-07-12 and locked out all users). Pings the REST API daily, which is
+# what Supabase counts as activity — an internal pg_cron job would NOT count.
+# Remove this workflow after upgrading the project to Supabase Pro.
+
+on:
+  schedule:
+    - cron: '17 9 * * *' # daily 09:17 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/mjm_modules?select=id&limit=1")
+          echo "Supabase REST responded HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Keep-alive ping failed with HTTP $code — project may be paused or unreachable"
+            exit 1
+          fi
