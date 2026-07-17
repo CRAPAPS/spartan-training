@@ -1,4 +1,4 @@
-export type SlideType = 'slide' | 'video' | 'scenario' | 'checklist';
+export type SlideType = 'slide' | 'video' | 'scenario' | 'checklist' | 'practical';
 
 export interface Callout {
   type: 'warning' | 'info' | 'tip';
@@ -38,7 +38,27 @@ export interface ChecklistSlide {
   narrationUrl?: string;
 }
 
-export type Slide = SlideSlide | VideoSlide | ScenarioSlide | ChecklistSlide;
+export interface PracticalSlide {
+  type: 'practical';
+  practicalId: 'PR-1' | 'PR-2' | 'PR-3';
+  title: string;
+  hourCredit: number;
+  brief: string[];
+  requiredSections: string[];
+  formattingStandards: string[];
+  submissionInstructions: string;
+  narrationUrl?: string;
+}
+
+export type Slide = SlideSlide | VideoSlide | ScenarioSlide | ChecklistSlide | PracticalSlide;
+
+export interface PracticalSubmissionState {
+  status: 'submitted' | 'graded';
+  fileName: string;
+  submittedAt: string;
+  grade?: 'pass' | 'fail' | null;
+  feedback?: string | null;
+}
 
 export interface LessonProgress {
   currentSlide: number;

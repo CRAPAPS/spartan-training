@@ -17,7 +17,7 @@ const TRACK_ACCREDITATION: Record<string, string> = {
 
 const TRACK_HOURS: Record<string, number> = {
   'armed-security': 16,
-  'private-detective': 72,
+  'private-detective': 70,
   'unarmed-security': 24,
 };
 

@@ -21,7 +21,7 @@ const TRACKS = [
   },
   {
     num: 'CHARLIE', id: 'private-detective', title: 'Private Detective',
-    hours: '72 hrs', hoursDetail: '72 hrs online', modules: 24, price: '$849', active: true,
+    hours: '70 hrs', hoursDetail: '70 hrs online', modules: 24, price: '$849', active: true,
     desc: 'Comprehensive private investigation curriculum covering surveillance, evidence handling, legal authority, and investigative methodology under Georgia GBPDSA Title 43, Chapter 38.',
     rangeNote: '',
     topics: ['Surveillance Techniques', 'Evidence Documentation', 'Legal Authority & Boundaries', 'Report Writing', 'Digital Investigation Basics'],
@@ -259,11 +259,11 @@ export default function CurriculumPage() {
         <section>
           <div className="curriculum-module-header">
             <MonoLabel dot dotColor="var(--success)">CHARLIE — Private Detective · 24 Modules</MonoLabel>
-            <MonoLabel size="xs">72 HRS ONLINE · $849</MonoLabel>
+            <MonoLabel size="xs">70 HRS ONLINE · $849</MonoLabel>
           </div>
           <div style={{ background: 'var(--bg-elev-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--success)', padding: '10px 16px', marginBottom: '24px' }}>
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--success)', letterSpacing: '0.05em', lineHeight: 1.6, margin: 0 }}>
-              GEORGIA GBPDSA — All 72 hours completed online. Curriculum grounded in OCGA Title 43 Ch. 38, Title 16, Title 17, and applicable federal statutes. Minimum passing score: 70% per module.
+              GEORGIA GBPDSA — All 70 hours completed online. Curriculum grounded in OCGA Title 43 Ch. 38, Title 16, Title 17, and applicable federal statutes. Minimum passing score: 70% per module.
             </p>
           </div>
 

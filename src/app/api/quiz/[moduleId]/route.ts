@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
 import { sendCriticalFailAlert } from '@/lib/email';
+import { isPracticalModule } from '@/lib/practicals';
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
@@ -21,6 +22,24 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Practical report gate — server-side mirror of the quiz page gate (PI-13/14/19)
+  if (isPracticalModule(moduleId)) {
+    const { data: self } = await admin
+      .from('operators').select('role').eq('id', user.id).single();
+    const role = (self as { role?: string } | null)?.role ?? 'agent';
+    if (!['admin', 'coordinator', 'super_admin'].includes(role)) {
+      const { data: sub } = await admin
+        .from('report_submissions')
+        .select('id')
+        .eq('operator_id', user.id)
+        .eq('module_id', moduleId)
+        .maybeSingle();
+      if (!sub) {
+        return NextResponse.json({ error: 'Practical report must be submitted before assessment' }, { status: 403 });
+      }
+    }
+  }
 
   const body = await req.json();
   // answers: Record<questionId, originalKey | null>  (originalKey = A|B|C|D from DB)

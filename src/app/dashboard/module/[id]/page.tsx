@@ -7,7 +7,8 @@ import { SlidePlayerClient } from '@/components/course/SlidePlayerClient';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { Rule } from '@/components/primitives/Rule';
-import type { Slide } from '@/types/lesson';
+import type { Slide, PracticalSubmissionState } from '@/types/lesson';
+import { isPracticalModule } from '@/lib/practicals';
 
 interface ModulePageProps {
   params: Promise<{ id: string }>;
@@ -80,6 +81,26 @@ export default async function ModulePage({ params }: ModulePageProps) {
     .eq('module_id', id)
     .single();
 
+  // Practical report submission state (PI-13/14/19) — powers the upload widget
+  let practicalSubmission: PracticalSubmissionState | null = null;
+  if (isPracticalModule(id)) {
+    const { data: sub } = await supabaseAdmin
+      .from('report_submissions')
+      .select('status, file_name, submitted_at, grade, feedback')
+      .eq('operator_id', user.id)
+      .eq('module_id', id)
+      .maybeSingle();
+    if (sub) {
+      practicalSubmission = {
+        status: sub.status as 'submitted' | 'graded',
+        fileName: sub.file_name as string,
+        submittedAt: sub.submitted_at as string,
+        grade: (sub.grade ?? null) as 'pass' | 'fail' | null,
+        feedback: (sub.feedback ?? null) as string | null,
+      };
+    }
+  }
+
   const initialSlide = (progress?.scorm_data as Record<string, unknown> | null)
     ?.lesson
     ? ((progress!.scorm_data as Record<string, unknown>).lesson as Record<string, unknown>).currentSlide as number ?? 0
@@ -128,6 +149,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
             slides={lesson.slides as Slide[]}
             initialSlide={initialSlide}
             passingScore={module.passing_score ?? 80}
+            practicalSubmission={practicalSubmission}
           />
         ) : (
           <div style={{ padding: '16px', border: '1px solid var(--border)', background: 'var(--bg-elev-1)', marginBottom: '28px', display: 'flex', gap: '12px' }}>

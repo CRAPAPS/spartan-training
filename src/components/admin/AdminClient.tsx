@@ -7,8 +7,9 @@ import { ModuleManager, type ModuleData } from './ModuleManager';
 import { OperatorRoster, type OperatorData } from './OperatorRoster';
 import { AuditLogViewer, type AuditEntry } from './AuditLogViewer';
 import { PromoCodeManager, type PromoCodeData } from './PromoCodeManager';
+import { ReportSubmissionsManager, type SubmissionData } from './ReportSubmissionsManager';
 
-type Tab = 'modules' | 'operators' | 'audit' | 'promo';
+type Tab = 'modules' | 'operators' | 'audit' | 'promo' | 'submissions';
 
 interface AdminClientProps {
   modules: ModuleData[];
@@ -19,16 +20,18 @@ interface AdminClientProps {
   stats: { totalOperators: number; totalCompetencies: number; criticalFails: number };
   enrollmentMap: Record<string, string[]>;
   promoCodes: PromoCodeData[];
+  submissions: SubmissionData[];
 }
 
-export function AdminClient({ modules, operators, auditLog, operatorMap, selfRole, stats, enrollmentMap, promoCodes }: AdminClientProps) {
+export function AdminClient({ modules, operators, auditLog, operatorMap, selfRole, stats, enrollmentMap, promoCodes, submissions }: AdminClientProps) {
   const [tab, setTab] = useState<Tab>('modules');
 
   const TABS: { id: Tab; label: string; count?: number }[] = [
-    { id: 'modules',   label: 'Modules',     count: modules.length },
-    { id: 'operators', label: 'Operators',   count: operators.length },
-    { id: 'audit',     label: 'Audit Log',   count: auditLog.length },
-    { id: 'promo',     label: 'Promo Codes', count: promoCodes.length },
+    { id: 'modules',     label: 'Modules',     count: modules.length },
+    { id: 'operators',   label: 'Operators',   count: operators.length },
+    { id: 'audit',       label: 'Audit Log',   count: auditLog.length },
+    { id: 'promo',       label: 'Promo Codes', count: promoCodes.length },
+    { id: 'submissions', label: 'Submissions', count: submissions.length },
   ];
 
   return (
@@ -119,6 +122,7 @@ export function AdminClient({ modules, operators, auditLog, operatorMap, selfRol
       )}
       {tab === 'audit' && <AuditLogViewer entries={auditLog} operatorMap={operatorMap} />}
       {tab === 'promo' && <PromoCodeManager initialCodes={promoCodes} />}
+      {tab === 'submissions' && <ReportSubmissionsManager initialSubmissions={submissions} />}
     </div>
   );
 }

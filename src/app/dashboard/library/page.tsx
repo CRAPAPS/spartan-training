@@ -53,7 +53,7 @@ const REFERENCE_CATEGORIES = [
       },
       {
         title: 'MJM 2026 Private Detective Training Class',
-        subtitle: 'GBPDSA Private Detective Training 72hr Standard',
+        subtitle: 'GBPDSA Private Detective Training 70hr Standard',
         type: 'CURRICULUM',
         status: 'CURRENT',
         note: 'PI track curriculum — future platform expansion',

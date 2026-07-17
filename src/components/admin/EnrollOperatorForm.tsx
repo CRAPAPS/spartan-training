@@ -6,7 +6,7 @@ import { BrassButton } from '@/components/primitives/BrassButton';
 
 const ENROLLABLE_TRACKS = [
   { id: 'armed-security',    label: 'Armed Security Officer (16hr)',   active: true  },
-  { id: 'private-detective', label: 'Private Detective (72hr)',         active: true  },
+  { id: 'private-detective', label: 'Private Detective (70hr)',         active: true  },
   { id: 'unarmed-security',  label: 'Unarmed Security Officer (24hr)', active: true  },
 ];
 

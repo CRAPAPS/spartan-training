@@ -119,7 +119,7 @@ export default function PrivacyPage() {
 
           <Section id="s1" title="Who We Are">
             <p>
-              Spartan Training LLC (&quot;Company,&quot; &quot;we,&quot; &quot;us,&quot; &quot;our&quot;) is a Georgia private security training organization operating under and accredited by the Georgia Board of Private Detectives and Security Agencies (GBPDSA). We deliver professional training for the MJM 2026 Armed Security Officer (16hr), Private Detective (72hr), and Unarmed Security Officer (24hr) accreditation programs under Georgia law and GA Admin Code 509-3-.01.
+              Spartan Training LLC (&quot;Company,&quot; &quot;we,&quot; &quot;us,&quot; &quot;our&quot;) is a Georgia private security training organization operating under and accredited by the Georgia Board of Private Detectives and Security Agencies (GBPDSA). We deliver professional training for the MJM 2026 Armed Security Officer (16hr), Private Detective (70hr), and Unarmed Security Officer (24hr) accreditation programs under Georgia law and GA Admin Code 509-3-.01.
             </p>
             <Sub title="Data Controller">
               <span>Spartan Training LLC is the data controller for all personal information processed through the Platform.</span><br /><br />

@@ -15,7 +15,7 @@ const STATUS_STYLES: Record<string, { color: string; label: string }> = {
 
 const TRACK_INFO: Record<string, { label: string; accentColor: string; badge: string }> = {
   'armed-security':    { label: 'Armed Security Officer',   accentColor: 'var(--brass)',   badge: 'MJM 2026 · 16 HRS · GBPDSA' },
-  'private-detective': { label: 'Private Detective',        accentColor: 'var(--success)', badge: 'MJM 2026 · 72 HRS · GBPDSA' },
+  'private-detective': { label: 'Private Detective',        accentColor: 'var(--success)', badge: 'MJM 2026 · 70 HRS · GBPDSA' },
   'unarmed-security':  { label: 'Unarmed Security Officer', accentColor: 'var(--ink-dim)', badge: 'MJM 2026 · 24 HRS · GBPDSA' },
 };
 

@@ -47,7 +47,7 @@ const TRACK_MODULE_COUNT: Record<string, number> = {
 
 const AVAILABLE_TRACKS = [
   { id: 'armed-security',    label: 'Armed Security (16hr)',    active: true  },
-  { id: 'private-detective', label: 'Private Detective (72hr)', active: true  },
+  { id: 'private-detective', label: 'Private Detective (70hr)', active: true  },
   { id: 'unarmed-security',  label: 'Unarmed Security (24hr)', active: true  },
 ];
 

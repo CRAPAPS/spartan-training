@@ -6,7 +6,7 @@ import { Rule } from '@/components/primitives/Rule';
 
 const TRACKS = [
   { id: 'armed-security',       label: 'ALPHA',   name: 'Armed Security',       hours: '16 hrs', price: '$199' },
-  { id: 'private-detective',    label: 'BRAVO',   name: 'Private Detective',    hours: '72 hrs', price: '$349' },
+  { id: 'private-detective',    label: 'BRAVO',   name: 'Private Detective',    hours: '70 hrs', price: '$349' },
   { id: 'executive-protection', label: 'CHARLIE', name: 'Executive Protection', hours: '24 hrs', price: '$249' },
 ] as const;
 

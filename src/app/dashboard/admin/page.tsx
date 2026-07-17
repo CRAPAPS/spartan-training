@@ -75,6 +75,19 @@ export default async function AdminPage() {
     .select('id, code, discount_type, discount_value, max_uses, uses_count, applicable_tracks, expires_at, is_active, notes, created_at')
     .order('created_at', { ascending: false });
 
+  // Practical report submissions (PI track)
+  const { data: submissionRows } = await supabaseAdmin
+    .from('report_submissions')
+    .select('id, operator_id, module_id, practical_id, file_name, file_size, mime_type, status, grade, feedback, graded_at, submitted_at')
+    .order('submitted_at', { ascending: false });
+
+  const opById = Object.fromEntries((operators ?? []).map((op: any) => [op.id, op]));
+  const submissions = (submissionRows ?? []).map((s: any) => ({
+    ...s,
+    operator_code: opById[s.operator_id]?.operator_id ?? '—',
+    operator_name: opById[s.operator_id]?.full_name ?? 'Unknown',
+  }));
+
   // Audit log (last 200 entries)
   const { data: auditLog } = await supabaseAdmin
     .from('spartan_audit_log')
@@ -103,6 +116,7 @@ export default async function AdminPage() {
       }}
       enrollmentMap={enrollmentMap}
       promoCodes={(promoCodes ?? []) as import('@/components/admin/PromoCodeManager').PromoCodeData[]}
+      submissions={submissions as import('@/components/admin/ReportSubmissionsManager').SubmissionData[]}
     />
   );
 }

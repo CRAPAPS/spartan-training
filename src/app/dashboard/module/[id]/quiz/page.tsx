@@ -4,6 +4,7 @@ import { QuizClient } from '@/components/quiz/QuizClient';
 import { CooldownScreen } from '@/components/quiz/CooldownScreen';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { shuffle } from '@/lib/shuffle';
+import { isPracticalModule } from '@/lib/practicals';
 import type { ShuffledQuestion, ShuffledOption } from '@/types/quiz';
 
 interface QuizPageProps {
@@ -60,6 +61,17 @@ export default async function ModuleQuizPage({ params }: QuizPageProps) {
         .single();
       if (!prevProgress?.is_competent) redirect('/dashboard?gate=blocked');
     }
+  }
+
+  // Practical report gate — PI-13/14/19 require a submitted report before assessment
+  if (!isPrivileged && isPracticalModule(id)) {
+    const { data: sub } = await supabaseAdmin
+      .from('report_submissions')
+      .select('id')
+      .eq('operator_id', user.id)
+      .eq('module_id', id)
+      .maybeSingle();
+    if (!sub) redirect(`/dashboard/module/${id}`);
   }
 
   // 24-hour cooldown: check for a recent critical fail on this module

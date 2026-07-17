@@ -4,16 +4,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { SlideContent } from './SlideContent';
-import type { Slide } from '@/types/lesson';
+import type { Slide, PracticalSubmissionState } from '@/types/lesson';
 
 interface SlidePlayerClientProps {
   moduleId: string;
   slides: Slide[];
   initialSlide: number;
   passingScore: number;
+  practicalSubmission?: PracticalSubmissionState | null;
 }
 
-export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore }: SlidePlayerClientProps) {
+export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore, practicalSubmission = null }: SlidePlayerClientProps) {
   const [current, setCurrent] = useState(
     Math.max(0, Math.min(initialSlide, slides.length - 1))
   );
@@ -202,7 +203,7 @@ export function SlidePlayerClient({ moduleId, slides, initialSlide, passingScore
 
       {/* ── Slide content ─────────────────────────────────────────────────── */}
       <div className="slide-content">
-        <SlideContent slide={slides[current]} />
+        <SlideContent slide={slides[current]} moduleId={moduleId} practicalSubmission={practicalSubmission} />
       </div>
 
       {/* ── Navigation footer ─────────────────────────────────────────────── */}
