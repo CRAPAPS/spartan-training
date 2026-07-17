@@ -2,6 +2,13 @@ import { redirect } from 'next/navigation';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { Rule } from '@/components/primitives/Rule';
+import { PRACTICAL_MODULES, MODULE_TO_PRACTICAL } from '@/lib/practicals';
+
+const PRACTICAL_TITLES: Record<string, string> = {
+  'PI-13': 'Incident Report',
+  'PI-14': 'Law Enforcement Report',
+  'PI-19': 'Domestic Disturbance Report',
+};
 
 const TRACK_LABEL: Record<string, string> = {
   'armed-security': 'Armed Security',
@@ -27,7 +34,7 @@ export default async function CredentialsPage() {
   if (!user) redirect('/sign-in');
 
   // All data via admin client — publishable key breaks PostgREST
-  const [{ data: operator }, { data: enrollments }, { data: allProgress }] = await Promise.all([
+  const [{ data: operator }, { data: enrollments }, { data: allProgress }, { data: reportSubs }] = await Promise.all([
     supabaseAdmin
       .from('operators')
       .select('operator_id, full_name, email, enrolled_at')
@@ -40,6 +47,10 @@ export default async function CredentialsPage() {
     supabaseAdmin
       .from('operator_progress')
       .select('module_id, is_competent, score, completed_at')
+      .eq('operator_id', user.id),
+    supabaseAdmin
+      .from('report_submissions')
+      .select('module_id, status, grade')
       .eq('operator_id', user.id),
   ]);
 
@@ -70,7 +81,21 @@ export default async function CredentialsPage() {
     const enrollment = (enrollments ?? []).find(e => e.track === track);
     const competentModules = modules.filter(m => progressMap[m.id]?.is_competent);
     const competentCount = competentModules.length;
-    const isAccredited = competentCount === totalModules && totalModules > 0;
+
+    // PI certification additionally requires all 3 practical reports submitted
+    // AND at least one graded PASS by the lead instructor.
+    const isPI = track === 'private-detective';
+    const subsByModule = Object.fromEntries((reportSubs ?? []).map(s => [s.module_id as string, s]));
+    const practicals = isPI
+      ? {
+          submitted: (reportSubs ?? []).length,
+          hasPass: (reportSubs ?? []).some(s => s.grade === 'pass'),
+          byModule: subsByModule as Record<string, { status: string; grade: string | null }>,
+        }
+      : null;
+    const practicalsComplete = !practicals || (practicals.submitted >= 3 && practicals.hasPass);
+
+    const isAccredited = competentCount === totalModules && totalModules > 0 && practicalsComplete;
     const totalHours = competentModules.reduce((sum, m) => sum + (m.duration_hours ?? 1), 0);
     const requiredHours = TRACK_HOURS[track] ?? totalModules;
     const lastCompleted = competentModules
@@ -78,7 +103,7 @@ export default async function CredentialsPage() {
       .filter(p => p?.completed_at)
       .sort((a, b) => new Date(b!.completed_at!).getTime() - new Date(a!.completed_at!).getTime())[0];
 
-    return { track, label: TRACK_LABEL[track] ?? track, accreditation: TRACK_ACCREDITATION[track] ?? track, requiredHours, enrollment, modules, totalModules, competentCount, isAccredited, totalHours, lastCompleted };
+    return { track, label: TRACK_LABEL[track] ?? track, accreditation: TRACK_ACCREDITATION[track] ?? track, requiredHours, enrollment, modules, totalModules, competentCount, isAccredited, totalHours, lastCompleted, practicals };
   });
 
   return (
@@ -176,6 +201,43 @@ export default async function CredentialsPage() {
                   </div>
                 </div>
 
+                {/* Practical reports status — PI track only */}
+                {cred.practicals && (
+                  <div style={{ border: '1px solid var(--border)', background: 'var(--bg-elev-1)', padding: '16px 20px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <MonoLabel size="xs">Practical Reports — required for certification</MonoLabel>
+                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                      {PRACTICAL_MODULES.map(mid => {
+                        const sub = cred.practicals!.byModule[mid];
+                        const state = !sub ? 'NOT SUBMITTED'
+                          : sub.status === 'graded'
+                            ? (sub.grade === 'pass' ? 'GRADED · PASS' : 'GRADED · RESUBMIT')
+                            : 'SUBMITTED';
+                        const color = !sub ? 'var(--ink-mute)'
+                          : sub.status === 'graded'
+                            ? (sub.grade === 'pass' ? 'var(--success)' : 'var(--danger)')
+                            : 'var(--brass)';
+                        return (
+                          <div key={mid} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', color: 'var(--ink)', textTransform: 'uppercase', fontWeight: 700 }}>
+                              {MODULE_TO_PRACTICAL[mid]} · {PRACTICAL_TITLES[mid]}
+                            </span>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', color, textTransform: 'uppercase' }}>
+                              {!sub ? '○' : '●'} {state} <span style={{ color: 'var(--ink-mute)' }}>· {mid}</span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <MonoLabel size="xs" style={{ color: cred.practicals.hasPass ? 'var(--success)' : 'var(--ink-mute)' }}>
+                      {cred.practicals.hasPass
+                        ? '● Instructor grading complete — certification requirement met'
+                        : cred.practicals.submitted >= 3
+                          ? '○ All reports in — awaiting lead instructor grading (at least one report is formally graded)'
+                          : `○ ${3 - cred.practicals.submitted} report${3 - cred.practicals.submitted !== 1 ? 's' : ''} outstanding — submitted inside modules PI-13, PI-14 and PI-19`}
+                    </MonoLabel>
+                  </div>
+                )}
+
                 {/* Certificate preview / locked */}
                 <MonoLabel style={{ marginBottom: '12px', display: 'block' }}>Certificate — {cred.label}</MonoLabel>
 
@@ -221,19 +283,30 @@ export default async function CredentialsPage() {
                       ))}
                     </div>
                   </div>
-                ) : (
-                  <div style={{ border: '1px solid var(--border)', background: 'var(--bg-elev-1)', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', marginBottom: '24px' }}>
-                    <div style={{ width: '48px', height: '48px', border: '2px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--border-strong)', fontWeight: 700 }}>{cred.totalModules - cred.competentCount}</span>
+                ) : (() => {
+                  const remaining = cred.totalModules - cred.competentCount;
+                  const reportsOutstanding = cred.practicals ? Math.max(0, 3 - cred.practicals.submitted) : 0;
+                  const awaitingGrade = cred.practicals ? cred.practicals.submitted >= 3 && !cred.practicals.hasPass : false;
+                  return (
+                    <div style={{ border: '1px solid var(--border)', background: 'var(--bg-elev-1)', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', marginBottom: '24px' }}>
+                      <div style={{ width: '48px', height: '48px', border: '2px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--border-strong)', fontWeight: 700 }}>{remaining > 0 ? remaining : '§'}</span>
+                      </div>
+                      <MonoLabel size="xs" style={{ color: 'var(--ink-mute)', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+                        {remaining > 0
+                          ? `${remaining} module${remaining !== 1 ? 's' : ''} remaining`
+                          : awaitingGrade
+                            ? 'Awaiting instructor grading'
+                            : `${reportsOutstanding} practical report${reportsOutstanding !== 1 ? 's' : ''} outstanding`}
+                      </MonoLabel>
+                      <MonoLabel size="xs" style={{ maxWidth: '380px' }}>
+                        {cred.practicals
+                          ? `Your ${cred.label} certificate is issued once all ${cred.totalModules} modules are passed, all three practical reports are submitted, and at least one report is graded PASS by the lead instructor.`
+                          : `Your ${cred.label} certificate will be issued once all ${cred.totalModules} modules are passed.`}
+                      </MonoLabel>
                     </div>
-                    <MonoLabel size="xs" style={{ color: 'var(--ink-mute)', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
-                      {cred.totalModules - cred.competentCount} module{cred.totalModules - cred.competentCount !== 1 ? 's' : ''} remaining
-                    </MonoLabel>
-                    <MonoLabel size="xs" style={{ maxWidth: '340px' }}>
-                      Your {cred.label} certificate will be issued once all {cred.totalModules} modules are passed.
-                    </MonoLabel>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Module competency table */}
                 <MonoLabel style={{ marginBottom: '12px', display: 'block' }}>Competency Record — {cred.label}</MonoLabel>

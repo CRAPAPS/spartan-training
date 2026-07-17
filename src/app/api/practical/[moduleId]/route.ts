@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
-import { ALLOWED_MIME, MAX_REPORT_BYTES, MODULE_TO_PRACTICAL, isPracticalModule } from '@/lib/practicals';
+import { ALLOWED_MIME, MAX_REPORT_BYTES, MODULE_TO_PRACTICAL, PRACTICAL_MODULES, isPracticalModule } from '@/lib/practicals';
+import { sendReportsReadyAlert } from '@/lib/email';
 import type { PracticalSubmissionState } from '@/types/lesson';
 
 const BUCKET = 'practical-reports';
@@ -125,6 +126,31 @@ export async function POST(
 
   if (dbError || !row) {
     return NextResponse.json({ error: dbError?.message ?? 'Failed to record submission' }, { status: 500 });
+  }
+
+  // First submission for this module — if it completes the set of three,
+  // notify the lead instructor that grading is due. Replacement uploads never re-fire.
+  if (!existing) {
+    try {
+      const { data: allSubs } = await supabaseAdmin
+        .from('report_submissions')
+        .select('module_id')
+        .eq('operator_id', user.id)
+        .in('module_id', [...PRACTICAL_MODULES]);
+      if ((allSubs ?? []).length === PRACTICAL_MODULES.length) {
+        const { data: op } = await supabaseAdmin
+          .from('operators')
+          .select('full_name, operator_id')
+          .eq('id', user.id)
+          .single();
+        await sendReportsReadyAlert(
+          (op as { full_name?: string } | null)?.full_name ?? 'Unknown Operator',
+          (op as { operator_id?: string } | null)?.operator_id ?? '—',
+        );
+      }
+    } catch (err) {
+      console.error('[practical] grader notification failed:', err);
+    }
   }
 
   return NextResponse.json(toState(row));

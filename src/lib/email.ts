@@ -132,6 +132,60 @@ export async function sendEnrollmentConfirmation(
   );
 }
 
+// Fired when an operator's third practical report lands — the lead instructor
+// must grade at least one of the three before the certificate unlocks.
+export async function sendReportsReadyAlert(
+  operatorName: string,
+  operatorId:   string,
+): Promise<void> {
+  const graderEmail = process.env.SPARTAN_GRADER_EMAIL ?? 'mak@palisadeintl.com';
+  const subject = `REPORTS READY FOR GRADING — ${operatorId}`;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background:#0A0907;font-family:Inter,sans-serif;color:#F0EDE6;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="580" cellpadding="0" cellspacing="0" style="background:#111009;border:1px solid #C5A059;border-radius:4px;">
+        <tr>
+          <td style="padding:20px 40px;background:#C5A059;">
+            <p style="margin:0;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#0A0907;">SPARTAN TRAINING — PRACTICAL REPORTS READY FOR GRADING</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px 40px;">
+            <p style="color:#B8B0A0;font-size:14px;line-height:1.6;">An operator has submitted all three practical reports for the Private Detective (70hr) track:</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#181510;border:1px solid #2A2520;border-radius:4px;">
+              <tr><td style="padding:20px 24px;">
+                <p style="margin:0 0 8px;font-size:13px;color:#B8B0A0;">Operator: <strong style="color:#F0EDE6;">${operatorName}</strong> (${operatorId})</p>
+                <p style="margin:0 0 8px;font-size:13px;color:#B8B0A0;">Reports: <strong style="color:#F0EDE6;">PR-1 Incident Report · PR-2 Law Enforcement Report · PR-3 Domestic Disturbance Report</strong></p>
+                <p style="margin:0;font-size:13px;color:#B8B0A0;">Submitted: <strong style="color:#F0EDE6;">${new Date().toUTCString()}</strong></p>
+              </td></tr>
+            </table>
+            <p style="color:#B8B0A0;font-size:13px;line-height:1.6;margin:0;">Please grade <strong style="color:#F0EDE6;">at least one</strong> of the three reports (the operator is not told which). The certificate cannot be issued until one report carries a PASS grade.<br/><br/>Grade it here: <a href="https://spartantraining.live/dashboard/admin" style="color:#C5A059;">Admin Panel → Submissions</a> — open the operator's row, Download to review, then Grade with feedback.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 40px;border-top:1px solid #2A2520;">
+            <p style="margin:0;font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#6A6460;">SPARTAN TRAINING LLC · MJM 2026 · GBPDSA COMPLIANT</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+  `.trim();
+
+  await sendEmail(graderEmail, subject, html);
+
+  const adminEmail = process.env.SPARTAN_ADMIN_EMAIL;
+  if (adminEmail && adminEmail !== graderEmail) {
+    await sendEmail(adminEmail, subject, html);
+  }
+}
+
 export async function sendCriticalFailAlert(
   operatorEmail:  string,
   operatorName:   string,
