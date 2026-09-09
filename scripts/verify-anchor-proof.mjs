@@ -51,11 +51,16 @@ for (const arg of process.argv.slice(2)) {
   if (m) proofs.set(m[1], m[2]);
 }
 
+// checklist slides keep their content in items[] and use `title` not `heading`.
 const slideText = (s) =>
   [
     s.heading ?? '',
+    s.title ?? '',
     s.body ?? '',
     Array.isArray(s.keyPoints) ? s.keyPoints.join(' ') : '',
+    Array.isArray(s.items)
+      ? s.items.map((i) => `${i?.label ?? ''} ${i?.description ?? ''}`).join(' ')
+      : '',
     s.callout?.text ?? '',
     s.legalRef ?? '',
   ].join(' ');

@@ -102,6 +102,16 @@ function renderSlide(slide, index, moduleId) {
     for (const p of slide.keyPoints) out.push(`  - ${p}`);
     out.push('');
   }
+  // checklist slides hold everything in items[] — omit these and the reviewer sees
+  // an empty slide and cannot choose it, which is how UAS-07-s05 was missed.
+  if (Array.isArray(slide.items) && slide.items.length) {
+    out.push('Checklist items:');
+    for (const it of slide.items) {
+      out.push(`  - **${it?.label ?? ''}** — ${it?.description ?? ''}`);
+    }
+    out.push('');
+  }
+
   if (slide.legalRef) { out.push(`Legal reference: ${slide.legalRef}`); out.push(''); }
   if (slide.callout?.text) {
     out.push(`> ${slide.callout.type ? `[${String(slide.callout.type).toUpperCase()}] ` : ''}${slide.callout.text}`);

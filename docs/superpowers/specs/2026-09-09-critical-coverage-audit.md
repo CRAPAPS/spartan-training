@@ -13,7 +13,7 @@ wording rather than a real gap — every row below needs a human look.
 - **CONTENT GAP (0)** — under 50% of the answer's terms appear anywhere in the
   whole track. The course does not teach this. A learner can critically fail on it and the
   gate has nowhere useful to send them. **Fix the slide content.**
-- **WRONG SLIDE? (8)** — the track teaches it, but under 40% of it is on the
+- **WRONG SLIDE? (5)** — the track teaches it, but under 40% of it is on the
   anchored slide. Usually the anchor should move rather than the content changing.
 
 ---
@@ -22,23 +22,7 @@ wording rather than a real gap — every row below needs a human look.
 
 _None._
 
-## WRONG SLIDE? — 8
-
-### `uas16-q3` — UAS-16 Crowd Management & Public Assembly Security
-
-**Q:** A crowd crush can kill people who are standing upright because:
-
-**Correct:** Lateral compression from the surrounding crowd prevents the diaphragm from expanding — preventing breathing
-
-**Anchor:** `UAS-16-s01` — Crowd Density, Crush Prevention & Ingress/Egress Management
-
-**Coverage:** anchor 33% · home module 67% · track 78%
-
-**Taught NOWHERE in the track:** `surrounding`, `diaphragm`
-
-**Not on the anchored slide:** `lateral`, `compression`, `surrounding`, `diaphragm`, `expanding`, `breathing`
-
----
+## WRONG SLIDE? — 5
 
 ### `mod07-q3` — MOD-07 The Four Cardinal Rules of Firearms Safety
 
@@ -65,34 +49,6 @@ _None._
 **Coverage:** anchor 13% · home module 50% · track 100%
 
 **Not on the anchored slide:** `refuse`, `offer`, `continue`, `document`, `attempt`, `report`, `supervisor`
-
----
-
-### `uas07-q3` — UAS-07 Use of Force Continuum — Unarmed Officers
-
-**Q:** After any use of physical force, an unarmed security officer's IMMEDIATE obligations include:
-
-**Correct:** Notify a supervisor, call for medical attention if needed, and begin contemporaneous documentation
-
-**Anchor:** `UAS-07-s03` — Post-Incident Reporting: Documenting Every Use of Force
-
-**Coverage:** anchor 25% · home module 50% · track 100%
-
-**Not on the anchored slide:** `notify`, `medical`, `attention`, `needed`, `begin`, `contemporaneous`
-
----
-
-### `uas08-q4` — UAS-08 De-escalation & Conflict Resolution
-
-**Q:** De-escalation should be abandoned and force considered when:
-
-**Correct:** The subject's behavior presents an imminent physical threat that cannot be safely resolved through further verbal engagement
-
-**Anchor:** `UAS-08-s00` — Why De-escalation Is a Security Skill, Not a Soft Skill
-
-**Coverage:** anchor 25% · home module 42% · track 100%
-
-**Not on the anchored slide:** `subject`, `behavior`, `presents`, `imminent`, `threat`, `cannot`, `safely`, `further`, `engagement`
 
 ---
 
@@ -145,7 +101,6 @@ _None._
 | `pi05-q5` | PI-05 | `PI-05-s04` | 40% | 40% | 60% |
 | `uas07-q1` | UAS-07 | `UAS-07-s00` | 43% | 43% | 71% |
 | `mod-14-q3` | MOD-14 | `MOD-14-s02` | 75% | 75% | 75% |
-| `uas16-q3` | UAS-16 | `UAS-16-s01` | 33% | 67% | 78% |
 | `uas17-q2` | UAS-17 | `UAS-17-s01` | 60% | 80% | 80% |
 | `pi24-q7` | PI-24 | `PI-15-s03` ⤴ | 80% | 80% | 80% |
 | `pi04-q5` | PI-04 | `PI-04-s04` | 67% | 67% | 83% |
@@ -158,22 +113,22 @@ _None._
 | `uas20-q3` | UAS-20 | `UAS-20-s01` | 64% | 71% | 93% |
 | `mod07-q3` | MOD-07 | `MOD-07-s02` | 13% | 63% | 100% |
 | `uas03-q1` | UAS-03 | `UAS-03-s03` | 13% | 50% | 100% |
-| `uas07-q3` | UAS-07 | `UAS-07-s03` | 25% | 50% | 100% |
-| `uas08-q4` | UAS-08 | `UAS-08-s00` | 25% | 42% | 100% |
 | `mod02-q1` | MOD-02 | `MOD-02-s03` | 27% | 73% | 100% |
 | `uas12-q1` | UAS-12 | `UAS-12-s00` | 33% | 67% | 100% |
 | `uas12-q5` | UAS-12 | `UAS-12-s00` | 33% | 67% | 100% |
 | `uas24-q9` | UAS-24 | `UAS-03-s01` ⤴ | 40% | 60% | 100% |
 | `mod01-q3` | MOD-01 | `MOD-01-s00` | 44% | 78% | 100% |
 | `mod02-q5` | MOD-02 | `MOD-02-s03` | 50% | 50% | 100% |
-| `mod07-q1` | MOD-07 | `MOD-07-s02` | 50% | 50% | 100% |
+| `mod07-q1` | MOD-07 | `MOD-07-s02` | 50% | 75% | 100% |
 | `mod09-q4` | MOD-09 | `MOD-09-s04` | 50% | 100% | 100% |
 | `uas04-q4` | UAS-04 | `UAS-04-s02` | 50% | 67% | 100% |
+| `uas07-q3` | UAS-07 | `UAS-07-s05` | 50% | 75% | 100% |
 | `uas24-q7` | UAS-24 | `UAS-12-s00` ⤴ | 50% | 75% | 100% |
+| `uas08-q4` | UAS-08 | `UAS-07-s01` ⤴ | 58% | 83% | 100% |
 | `mod07-q5` | MOD-07 | `MOD-07-s06` | 60% | 60% | 100% |
-| `mod-12-q2` | MOD-12 | `MOD-12-s01` | 63% | 75% | 100% |
+| `mod-12-q2` | MOD-12 | `MOD-12-s01` | 63% | 88% | 100% |
 | `uas01-q1` | UAS-01 | `UAS-01-s00` | 63% | 63% | 100% |
-| `mod-13-q2` | MOD-13 | `MOD-13-s01` | 64% | 64% | 100% |
+| `mod-13-q2` | MOD-13 | `MOD-13-s01` | 64% | 91% | 100% |
 | `mod02-q4` | MOD-02 | `MOD-02-s01` | 67% | 100% | 100% |
 | `pi06-q2` | PI-06 | `PI-06-s03` | 67% | 100% | 100% |
 | `uas03-q3` | UAS-03 | `UAS-03-s00` | 67% | 67% | 100% |
@@ -207,3 +162,4 @@ _None._
 | `uas02-q1` | UAS-02 | `UAS-02-s01` | 100% | 100% | 100% |
 | `uas05-q1` | UAS-05 | `UAS-05-s00` | 100% | 100% | 100% |
 | `uas14-q1` | UAS-14 | `UAS-14-s01` | 100% | 100% | 100% |
+| `uas16-q3` | UAS-16 | `UAS-16-s01` | 100% | 100% | 100% |

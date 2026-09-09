@@ -39,6 +39,28 @@
 #   NOT is_critical, so the gate never fires on it — the anchor would be dead
 #   weight. He appears to have answered a question that was not on the sheet.
 #
+#   rev 7 — 2026-09-09. Triage of the 8 anchors flagged by the coverage audit.
+#           TWO MOVED, five confirmed, one fixed by content instead.
+#             uas07-q3  UAS-07-s03 -> UAS-07-s05
+#               s03 "Post-Incident Reporting" teaches documentation ONLY. s05 is
+#               the "Use-of-Force Post-Incident Checklist" and carries all three
+#               obligations the question tests: Medical Assessment ("call EMS if
+#               there is any injury"), Supervisor Notified ("as soon as safely
+#               possible"), Incident Report ("within 30 minutes").
+#             uas08-q4  UAS-08-s00 -> UAS-07-s01   (cross-module)
+#               s00 teaches WHY to de-escalate. The question asks WHEN to stop.
+#               UAS-07-s01 "Imminent Threat Standard" states the threshold and
+#               refutes the distractors directly: "verbal threats alone do not
+#               constitute an imminent threat until action begins".
+#
+#           ⚠ TOOLING BUG FOUND AND FIXED DURING THIS TRIAGE: checklist slides
+#           store content in items[].label/description and use `title` not
+#           `heading`. Every script read only body/keyPoints, so ALL checklist
+#           slides scored as EMPTY — in the audit, in the original matcher, and in
+#           the worksheets sent to the specialist. UAS-07-s05 was invisible. Fixed
+#           in audit-critical-coverage, suggest-better-anchor, verify-anchor-proof,
+#           generate-anchor-worksheet and generate-remediation-anchors.
+#
 #   rev 6 — 2026-09-09. The last two answers supplied, this time quoting the REAL
 #           platform questions verbatim (uas12-q1, uas12-q5, uas16-q3). All 24
 #           decisions now have an answer. His covering document again used his own
@@ -58,7 +80,8 @@ ANSWER for uas03-q3:  UAS-03-s00
 ANSWER for uas04-q4:  UAS-04-s02
 ANSWER for uas04-q5:  UAS-04-s03
 ANSWER for uas06-q2:  UAS-06-s01
-ANSWER for uas07-q3:  UAS-07-s03
+ANSWER for uas07-q3:  UAS-07-s05
+ANSWER for uas08-q4:  UAS-07-s01
 ANSWER for uas12-q1:  UAS-12-s00
 ANSWER for uas12-q5:  UAS-12-s00
 ANSWER for uas16-q3:  UAS-16-s01

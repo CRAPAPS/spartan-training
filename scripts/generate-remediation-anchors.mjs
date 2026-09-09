@@ -92,9 +92,15 @@ const citations = (s) =>
   );
 
 function slideText(slide) {
+  // checklist slides carry their content in items[] and use `title` not `heading`.
+  // Reading only body/keyPoints scores the whole slide as empty — UAS-07-s05, the
+  // "Use-of-Force Post-Incident Checklist", was invisible to this matcher until fixed.
+  const items = Array.isArray(slide.items)
+    ? slide.items.map((i) => `${i?.label ?? ''} ${i?.description ?? ''}`).join(' ')
+    : '';
   return {
-    heading: slide.heading ?? '',
-    points: Array.isArray(slide.keyPoints) ? slide.keyPoints.join(' ') : '',
+    heading: [slide.heading ?? '', slide.title ?? ''].join(' '),
+    points: [Array.isArray(slide.keyPoints) ? slide.keyPoints.join(' ') : '', items].join(' '),
     body: [slide.body ?? '', slide.callout?.text ?? '', slide.legalRef ?? ''].join(' '),
     legalRef: slide.legalRef ?? '',
   };

@@ -93,10 +93,18 @@ const CITATION = /\b(?:\d{1,3}-\d{1,2}-[\d.]+|\d{2,3}\s*usc\s*§?\s*\d+|§\s*[\d
 const citations = (s) =>
   new Set((String(s ?? '').match(CITATION) ?? []).map((c) => c.toLowerCase().replace(/\s+/g, '')));
 
+// Slide shapes differ by type. A `checklist` slide holds ALL of its content in
+// items[].label / items[].description and has a `title` rather than a `heading` —
+// read only body/keyPoints and the entire slide scores as empty. UAS-07-s05 is the
+// "Use-of-Force Post-Incident Checklist" and was invisible to this audit until this
+// was fixed, which cost a correct anchor for uas07-q3.
 const slideText = (s) =>
   [
-    s.heading ?? '', s.body ?? '',
+    s.heading ?? '', s.title ?? '', s.body ?? '',
     Array.isArray(s.keyPoints) ? s.keyPoints.join(' ') : '',
+    Array.isArray(s.items)
+      ? s.items.map((i) => `${i?.label ?? ''} ${i?.description ?? ''}`).join(' ')
+      : '',
     s.callout?.text ?? '', s.legalRef ?? '',
   ].join(' ');
 
