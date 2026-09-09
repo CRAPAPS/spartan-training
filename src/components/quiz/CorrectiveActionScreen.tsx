@@ -69,12 +69,51 @@ export function CorrectiveActionScreen({ outstanding }: { outstanding: Outstandi
           action below. <strong>There is no waiting period</strong> — the assessment reopens the
           moment you finish.
         </p>
+
+        <div style={{
+          marginTop: '18px', paddingTop: '16px', borderTop: '1px solid rgba(232,64,64,.25)',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 700,
+            letterSpacing: '0.18em', color: 'var(--brass)', textTransform: 'uppercase',
+            marginBottom: '10px',
+          }}>
+            How this works
+          </div>
+          <ol style={{
+            fontFamily: 'var(--font-ui)', fontSize: '12.5px', color: 'var(--ink-dim)',
+            lineHeight: 1.9, margin: 0, paddingLeft: '18px',
+          }}>
+            <li>
+              Click <strong>Review source material</strong>. It opens the slide in a{' '}
+              <strong>new browser tab</strong>.
+            </li>
+            <li>Read the slide, then <strong>close that tab</strong> and come back to this page.</li>
+            <li>
+              The button here turns grey and reads <strong>Source material reviewed</strong>. The
+              three boxes below it are now unlocked.
+            </li>
+            <li>Write your answer in each box — at least 40 characters — then submit.</li>
+            <li>
+              Repeat for each item listed. When the last one is submitted, this page is replaced by
+              the assessment automatically.
+            </li>
+          </ol>
+          <p style={{
+            fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-mute)',
+            lineHeight: 1.7, margin: '12px 0 0',
+          }}>
+            You can leave and come back at any time. Anything you have already submitted is kept.
+          </p>
+        </div>
       </div>
 
-      {pending.map((item) => (
+      {pending.map((item, i) => (
         <ItemPanel
           key={item.questionId}
           item={item}
+          index={i + 1}
+          total={pending.length}
           moduleId={outstanding.moduleId}
           sessionId={outstanding.sessionId}
           onDone={() => router.refresh()}
@@ -89,9 +128,11 @@ export function CorrectiveActionScreen({ outstanding }: { outstanding: Outstandi
 }
 
 function ItemPanel({
-  item, moduleId, sessionId, onDone,
+  item, index, total, moduleId, sessionId, onDone,
 }: {
   item: MissedItem;
+  index: number;
+  total: number;
   moduleId: string;
   sessionId: string;
   onDone: () => void;
@@ -146,7 +187,9 @@ function ItemPanel({
     <div style={{
       border: '1px solid rgba(232,64,64,.3)', padding: '20px 24px', marginBottom: '24px',
     }}>
-      <MonoLabel style={{ marginBottom: '10px' }}>Critical item · {item.questionId}</MonoLabel>
+      <MonoLabel style={{ marginBottom: '10px' }}>
+        Item {index} of {total} · Critical · {item.questionId}
+      </MonoLabel>
 
       <p style={{
         fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--ink)',
@@ -180,17 +223,26 @@ function ItemPanel({
           onClick={() => setViewedAt(new Date().toISOString())}
         >
           <BrassButton variant={enabled ? 'ghost' : 'primary'} size="sm">
-            {item.slideId ? 'Review source material ⤳' : 'Review module ⤳'}
+            {enabled
+              ? '✓ Source material reviewed — open again ⤳'
+              : item.slideId
+                ? 'Review source material ⤳'
+                : 'Review module ⤳'}
           </BrassButton>
         </Link>
-        {!enabled && (
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.14em',
-            color: 'var(--ink-mute)', textTransform: 'uppercase', marginLeft: '12px',
-          }}>
-            open the source material to continue
-          </span>
-        )}
+
+        {/* The step people got stuck on: the link opens a NEW TAB, and nothing on
+            this page changes until they come back to it. Say so explicitly rather
+            than relying on the button colour to communicate it. */}
+        <p style={{
+          fontFamily: 'var(--font-ui)', fontSize: '12px', lineHeight: 1.7,
+          color: enabled ? 'var(--brass)' : 'var(--ink-dim)',
+          margin: '10px 0 0',
+        }}>
+          {enabled
+            ? 'Reviewed. The three boxes below are now unlocked — write your corrective action and submit.'
+            : 'Opens in a new browser tab. Read the slide there, then close that tab and return to this page — the boxes below unlock once you do.'}
+        </p>
       </div>
 
       {FIELDS.map((f, i) => {
@@ -242,8 +294,21 @@ function ItemPanel({
         disabled={!enabled || !complete || saving}
         onClick={submit}
       >
-        {saving ? 'Saving…' : 'Submit corrective action'}
+        {saving
+          ? 'Saving…'
+          : total === 1
+            ? 'Submit — this reopens the assessment'
+            : `Submit and continue (${total - 1} more after this)`}
       </BrassButton>
+
+      {enabled && !complete && (
+        <p style={{
+          fontFamily: 'var(--font-ui)', fontSize: '11.5px', color: 'var(--ink-mute)',
+          margin: '10px 0 0',
+        }}>
+          All three boxes need at least {NOTE_MIN_CHARS} characters before you can submit.
+        </p>
+      )}
     </div>
   );
 }
