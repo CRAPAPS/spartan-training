@@ -10,6 +10,7 @@ import { Rule } from '@/components/primitives/Rule';
 import type { Slide, PracticalSubmissionState } from '@/types/lesson';
 import { isPracticalModule } from '@/lib/practicals';
 import { resolveSlideIndex } from '@/lib/remediation';
+import { SlideViewAck } from '@/components/course/SlideViewAck';
 
 interface ModulePageProps {
   params: Promise<{ id: string }>;
@@ -157,13 +158,20 @@ export default async function ModulePage({ params, searchParams }: ModulePagePro
 
         {/* Lesson player or video placeholder */}
         {lesson && Array.isArray(lesson.slides) && lesson.slides.length > 0 ? (
+          <>
+          {/* Proof the learner actually REACHED the anchored slide. Rendered only
+              when the ?slide= anchor resolved, so it cannot fire if this page
+              redirected them away. The corrective action screen reads it back. */}
+          {anchorIndex !== null && slideAnchor && <SlideViewAck slideId={slideAnchor} />}
           <SlidePlayerClient
             moduleId={id}
             slides={lesson.slides as Slide[]}
             initialSlide={anchorIndex ?? initialSlide}
+            key={slideAnchor ?? 'resume'}
             passingScore={module.passing_score ?? 80}
             practicalSubmission={practicalSubmission}
           />
+          </>
         ) : (
           <div style={{ padding: '16px', border: '1px solid var(--border)', background: 'var(--bg-elev-1)', marginBottom: '28px', display: 'flex', gap: '12px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.16em', color: 'var(--ink-mute)', textTransform: 'uppercase', paddingTop: '2px', flexShrink: 0 }}>

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { slideAckKey } from '@/components/course/SlideViewAck';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { Rule } from '@/components/primitives/Rule';
@@ -142,6 +143,41 @@ function ItemPanel({
   const [viewedAt, setViewedAt] = useState<string | null>(
     item.slideId ? null : new Date().toISOString(),
   );
+
+  // Unlock on ARRIVAL, not on click.
+  //
+  // This used to be an onClick handler, which meant clicking the link was enough:
+  // if the module page bounced the learner (its own enrolment and sequential gates
+  // redirect to /dashboard?gate=blocked) they landed somewhere else, closed the tab,
+  // and the fields unlocked anyway. They passed the gate without seeing anything.
+  //
+  // The module page writes ca-viewed:<slideId> only when the anchor actually
+  // resolved to a real slide, so this key existing is proof they got there. Checked
+  // on mount and whenever this tab regains focus — which is exactly the moment they
+  // close the other tab and come back.
+  useEffect(() => {
+    if (!item.slideId) return;
+    const key = slideAckKey(item.slideId);
+
+    const check = () => {
+      try {
+        const stamp = window.localStorage.getItem(key);
+        if (stamp) setViewedAt(stamp);
+      } catch {
+        // Storage unusable (private browsing, blocked cookies). The signal can
+        // never arrive, so enable rather than trap the learner behind it.
+        setViewedAt(new Date().toISOString());
+      }
+    };
+
+    check();
+    window.addEventListener('focus', check);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      window.removeEventListener('focus', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [item.slideId]);
   const [notes, setNotes] = useState<Record<FieldKey, string>>({
     noteError: '', noteStandard: '', noteFieldAction: '',
   });
@@ -217,11 +253,7 @@ function ItemPanel({
       )}
 
       <div style={{ marginBottom: '18px' }}>
-        <Link
-          href={reviewHref}
-          target="_blank"
-          onClick={() => setViewedAt(new Date().toISOString())}
-        >
+        <Link href={reviewHref} target="_blank">
           <BrassButton variant={enabled ? 'ghost' : 'primary'} size="sm">
             {enabled
               ? '✓ Source material reviewed — open again ⤳'
