@@ -5,7 +5,7 @@ vi.mock('@/lib/supabaseServer', () => ({
   supabaseAdmin: { from: (...a: unknown[]) => mockFrom(...a) },
 }));
 
-import { getOutstandingRemediation } from '@/lib/remediation';
+import { getOutstandingRemediation } from '@/lib/remediationServer';
 
 // Minimal PostgREST-shaped chain stub. Every builder method returns the chain;
 // maybeSingle/single resolve, and `then` makes the chain itself awaitable for the

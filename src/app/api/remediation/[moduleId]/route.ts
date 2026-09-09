@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
-import { getOutstandingRemediation, validateNotes } from '@/lib/remediation';
+import { getOutstandingRemediation } from '@/lib/remediationServer';
+import { validateNotes } from '@/lib/remediation';
 
 /**
  * Corrective action gate — the endpoint that replaces the 24-hour lockout.

@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
 import { sendCriticalFailAlert } from '@/lib/email';
 import { isPracticalModule } from '@/lib/practicals';
-import { getOutstandingRemediation } from '@/lib/remediation';
+import { getOutstandingRemediation } from '@/lib/remediationServer';
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
@@ -44,8 +44,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
 
   // Corrective action gate — server-side mirror of the quiz page gate.
   // The page gate is a rendering decision and can be bypassed by posting directly,
-  // so it is enforced again here. Both call the same resolver in @/lib/remediation
-  // precisely so they cannot drift apart.
+  // so it is enforced again here. Both call the same resolver in
+  // @/lib/remediationServer precisely so they cannot drift apart.
   {
     const { data: self } = await admin
       .from('operators').select('role').eq('id', user.id).single();

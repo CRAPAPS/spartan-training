@@ -634,9 +634,11 @@ function ResultsView({ result, moduleId, moduleTitle, passingScore }: ResultsVie
             <BrassButton variant="ghost" size="md">Retry Assessment</BrassButton>
           </Link>
         )}
+        {/* The corrective action screen lives at the quiz URL — the gate renders it
+            in place of the assessment until the learner has recorded their notes. */}
         {isCriticalFail && (
-          <Link href={`/dashboard/module/${moduleId}`}>
-            <BrassButton variant="ghost" size="md">Review Module</BrassButton>
+          <Link href={`/dashboard/module/${moduleId}/quiz`}>
+            <BrassButton variant="primary" size="md">Begin Corrective Action ⤳</BrassButton>
           </Link>
         )}
       </div>

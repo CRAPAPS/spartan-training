@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { QuizClient } from '@/components/quiz/QuizClient';
 import { CorrectiveActionScreen } from '@/components/quiz/CorrectiveActionScreen';
-import { getOutstandingRemediation } from '@/lib/remediation';
+import { getOutstandingRemediation } from '@/lib/remediationServer';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { shuffle } from '@/lib/shuffle';
 import { isPracticalModule } from '@/lib/practicals';
