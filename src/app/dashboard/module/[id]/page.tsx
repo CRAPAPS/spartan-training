@@ -9,13 +9,17 @@ import { BrassButton } from '@/components/primitives/BrassButton';
 import { Rule } from '@/components/primitives/Rule';
 import type { Slide, PracticalSubmissionState } from '@/types/lesson';
 import { isPracticalModule } from '@/lib/practicals';
+import { resolveSlideIndex } from '@/lib/remediation';
 
 interface ModulePageProps {
   params: Promise<{ id: string }>;
+  /** `?slide=<slideId>` deep-link, used by the corrective action screen. */
+  searchParams: Promise<{ slide?: string }>;
 }
 
-export default async function ModulePage({ params }: ModulePageProps) {
+export default async function ModulePage({ params, searchParams }: ModulePageProps) {
   const { id } = await params;
+  const { slide: slideAnchor } = await searchParams;
   const supabase = await createServerSupabaseClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -106,6 +110,15 @@ export default async function ModulePage({ params }: ModulePageProps) {
     ? ((progress!.scorm_data as Record<string, unknown>).lesson as Record<string, unknown>).currentSlide as number ?? 0
     : 0;
 
+  // `?slide=<slideId>` deep-link from the corrective action screen. An anchor that
+  // no longer resolves falls through to the learner's normal resume position rather
+  // than erroring — a stale anchor is a content problem, not a reason to break the
+  // page.
+  const anchorIndex = resolveSlideIndex(
+    Array.isArray(lesson?.slides) ? (lesson.slides as unknown[]) : [],
+    slideAnchor ?? null,
+  );
+
   const TRACK_LABEL: Record<string, string> = {
     'armed-security':   'MJM 2026 Armed Security',
     'private-detective': 'MJM 2026 Private Detective',
@@ -147,7 +160,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
           <SlidePlayerClient
             moduleId={id}
             slides={lesson.slides as Slide[]}
-            initialSlide={initialSlide}
+            initialSlide={anchorIndex ?? initialSlide}
             passingScore={module.passing_score ?? 80}
             practicalSubmission={practicalSubmission}
           />
