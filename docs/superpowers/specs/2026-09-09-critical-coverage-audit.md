@@ -13,7 +13,7 @@ wording rather than a real gap — every row below needs a human look.
 - **CONTENT GAP (0)** — under 50% of the answer's terms appear anywhere in the
   whole track. The course does not teach this. A learner can critically fail on it and the
   gate has nowhere useful to send them. **Fix the slide content.**
-- **WRONG SLIDE? (5)** — the track teaches it, but under 40% of it is on the
+- **WRONG SLIDE? (3)** — the track teaches it, but under 40% of it is on the
   anchored slide. Usually the anchor should move rather than the content changing.
 
 ---
@@ -22,7 +22,7 @@ wording rather than a real gap — every row below needs a human look.
 
 _None._
 
-## WRONG SLIDE? — 5
+## WRONG SLIDE? — 3
 
 ### `mod07-q3` — MOD-07 The Four Cardinal Rules of Firearms Safety
 
@@ -66,34 +66,6 @@ _None._
 
 ---
 
-### `uas12-q1` — UAS-12 Emergency Procedures — Fire, Medical & Evacuation
-
-**Q:** In an emergency situation, a security officer's FIRST priority is always:
-
-**Correct:** Life safety — protecting persons from injury and calling for emergency services
-
-**Anchor:** `UAS-12-s00` — The Security Officer's Role in Emergency Response
-
-**Coverage:** anchor 33% · home module 67% · track 100%
-
-**Not on the anchored slide:** `safety`, `protecting`, `injury`, `calling`
-
----
-
-### `uas12-q5` — UAS-12 Emergency Procedures — Fire, Medical & Evacuation
-
-**Q:** A mass casualty incident occurs on your property. Law enforcement and EMS are en route. Your immediate role is:
-
-**Correct:** Secure the perimeter, prevent additional persons from entering the danger zone, and direct emergency responders upon arrival
-
-**Anchor:** `UAS-12-s00` — The Security Officer's Role in Emergency Response
-
-**Coverage:** anchor 33% · home module 67% · track 100%
-
-**Not on the anchored slide:** `perimeter`, `prevent`, `entering`, `danger`, `direct`, `arrival`
-
----
-
 ## Full ranking
 
 | Question | Module | Anchor | Anchor | Home | Track |
@@ -114,8 +86,6 @@ _None._
 | `mod07-q3` | MOD-07 | `MOD-07-s02` | 13% | 63% | 100% |
 | `uas03-q1` | UAS-03 | `UAS-03-s03` | 13% | 50% | 100% |
 | `mod02-q1` | MOD-02 | `MOD-02-s03` | 27% | 73% | 100% |
-| `uas12-q1` | UAS-12 | `UAS-12-s00` | 33% | 67% | 100% |
-| `uas12-q5` | UAS-12 | `UAS-12-s00` | 33% | 67% | 100% |
 | `uas24-q9` | UAS-24 | `UAS-03-s01` ⤴ | 40% | 60% | 100% |
 | `mod01-q3` | MOD-01 | `MOD-01-s00` | 44% | 78% | 100% |
 | `mod02-q5` | MOD-02 | `MOD-02-s03` | 50% | 50% | 100% |
@@ -123,6 +93,7 @@ _None._
 | `mod09-q4` | MOD-09 | `MOD-09-s04` | 50% | 100% | 100% |
 | `uas04-q4` | UAS-04 | `UAS-04-s02` | 50% | 67% | 100% |
 | `uas07-q3` | UAS-07 | `UAS-07-s05` | 50% | 75% | 100% |
+| `uas12-q1` | UAS-12 | `UAS-12-s00` | 50% | 67% | 100% |
 | `uas24-q7` | UAS-24 | `UAS-12-s00` ⤴ | 50% | 75% | 100% |
 | `uas08-q4` | UAS-08 | `UAS-07-s01` ⤴ | 58% | 83% | 100% |
 | `mod07-q5` | MOD-07 | `MOD-07-s06` | 60% | 60% | 100% |
@@ -161,5 +132,6 @@ _None._
 | `pi24-q9` | PI-24 | `PI-05-s00` ⤴ | 100% | 100% | 100% |
 | `uas02-q1` | UAS-02 | `UAS-02-s01` | 100% | 100% | 100% |
 | `uas05-q1` | UAS-05 | `UAS-05-s00` | 100% | 100% | 100% |
+| `uas12-q5` | UAS-12 | `UAS-12-s00` | 100% | 100% | 100% |
 | `uas14-q1` | UAS-14 | `UAS-14-s01` | 100% | 100% | 100% |
 | `uas16-q3` | UAS-16 | `UAS-16-s01` | 100% | 100% | 100% |
