@@ -1,5 +1,12 @@
 import type { NextConfig } from 'next';
 
+// React's DEVELOPMENT build uses eval() for debugging features such as
+// reconstructing call stacks. Without 'unsafe-eval' the dev server serves a page
+// that never hydrates — it renders, but nothing is clickable and no input works,
+// which makes local testing impossible. React never uses eval() in production, so
+// this is scoped to development only and the production CSP stays strict.
+const isDev = process.env.NODE_ENV === 'development';
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -18,7 +25,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://challenges.cloudflare.com`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob:",
