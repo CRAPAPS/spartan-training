@@ -27,6 +27,12 @@ export interface QuizResult {
   passed: boolean;
   criticalFail: boolean;
   criticalFailId: string | null;
+  /**
+   * The quiz_sessions row this submission created. remediation_records keys to it,
+   * so the corrective action screen needs it. Null only if the insert failed to
+   * return — the gate still works, because it resolves the session server-side.
+   */
+  sessionId: string | null;
   status: string;
   attempts: number;
   feedback: FeedbackItem[];

@@ -140,7 +140,9 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   }, { onConflict: 'operator_id,module_id' });
 
   // ── Record quiz session (with behavioral data) ────────────────────────────────
-  await admin.from('quiz_sessions').insert({
+  // Select the generated id back: remediation_records keys to (quiz_session_id,
+  // question_id), so the corrective action screen needs it to write a record.
+  const { data: sessionRow } = await admin.from('quiz_sessions').insert({
     operator_id:    user.id,
     module_id:      moduleId,
     submitted_at:   new Date().toISOString(),
@@ -149,7 +151,9 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     critical_fail:  criticalFail,
     answers,
     behavioral_data: behavioralData,
-  });
+  }).select('id').single();
+
+  const sessionId = (sessionRow as { id?: string } | null)?.id ?? null;
 
   // ── Critical fail email alert ─────────────────────────────────────────────────
   if (criticalFail) {
@@ -180,6 +184,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     passed,
     criticalFail,
     criticalFailId,
+    sessionId,
     status,
     attempts,
     feedback,
