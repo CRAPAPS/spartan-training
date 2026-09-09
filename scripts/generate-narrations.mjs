@@ -396,7 +396,12 @@ async function main() {
       : slides.map((_, i) => i);
 
     let totalChars = 0;
-    const updatedSlides = [...slides];
+    // Collect narrationUrl by index rather than mutating a stale copy of the array.
+    // Synthesis and upload take ~20s per slide; writing back the array we read at the
+    // start of that window silently discards anything written to the row meanwhile.
+    // On 2026-09-09 that clobbered every slideId in UAS-02, because migration 028
+    // stamped them while this loop was mid-upload.
+    const newUrls = new Map();
 
     for (const idx of indexes) {
       const slide = slides[idx];
@@ -423,7 +428,7 @@ async function main() {
       try {
         const audio = await synthesize(text, { apiKey, voiceId: voice, speed });
         const url   = await uploadAudio(supabaseUrl, serviceKey, `${moduleId}/${idx}.mp3`, audio);
-        updatedSlides[idx] = { ...slide, narrationUrl: url };
+        newUrls.set(idx, url);
         console.log(`        ✓ ${voiceLabel(voice)} ${(audio.length / 1024).toFixed(1)} KB → Storage`);
       } catch (e) {
         console.error(`        ✗ ${e.message}`);
@@ -432,13 +437,23 @@ async function main() {
       await new Promise(r => setTimeout(r, 500));
     }
 
-    if (!args.dryRun && indexes.length > 0) {
-      await supabasePatch(
-        `${supabaseUrl}/rest/v1/module_lessons?module_id=eq.${moduleId}`,
-        serviceKey,
-        { slides: updatedSlides, updated_at: new Date().toISOString() }
-      );
-      console.log(`  → database updated`);
+    if (!args.dryRun && newUrls.size > 0) {
+      // Re-read immediately before writing, so concurrent changes to other fields
+      // (slideId stamping, content edits) survive. We only ever set narrationUrl.
+      const fresh = await getSlides(supabaseUrl, serviceKey, moduleId);
+      if (fresh.length !== slides.length) {
+        console.error(`  ✗ slide count changed under us (${slides.length} -> ${fresh.length}) — NOT writing. Re-run this module.`);
+      } else {
+        const merged = fresh.map((s, i) =>
+          newUrls.has(i) ? { ...s, narrationUrl: newUrls.get(i) } : s
+        );
+        await supabasePatch(
+          `${supabaseUrl}/rest/v1/module_lessons?module_id=eq.${moduleId}`,
+          serviceKey,
+          { slides: merged, updated_at: new Date().toISOString() }
+        );
+        console.log(`  → database updated (${newUrls.size} slide(s), re-read before write)`);
+      }
     }
 
     console.log(`  Total chars this module: ${totalChars}`);
