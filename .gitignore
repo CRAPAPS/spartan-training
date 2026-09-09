@@ -28,3 +28,6 @@ npm-debug.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# ElevenLabs voice audition artefacts — regenerate with generate-narrations.mjs --audition
+scripts/audition/
