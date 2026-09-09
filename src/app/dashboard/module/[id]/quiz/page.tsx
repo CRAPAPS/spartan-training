@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient, supabaseAdmin } from '@/lib/supabaseServer';
 import { QuizClient } from '@/components/quiz/QuizClient';
-import { CooldownScreen } from '@/components/quiz/CooldownScreen';
+import { CorrectiveActionScreen } from '@/components/quiz/CorrectiveActionScreen';
+import { getOutstandingRemediation } from '@/lib/remediation';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { shuffle } from '@/lib/shuffle';
 import { isPracticalModule } from '@/lib/practicals';
@@ -74,27 +75,18 @@ export default async function ModuleQuizPage({ params }: QuizPageProps) {
     if (!sub) redirect(`/dashboard/module/${id}`);
   }
 
-  // 24-hour cooldown: check for a recent critical fail on this module
-  const { data: lastCritFail } = await supabaseAdmin
-    .from('quiz_sessions')
-    .select('submitted_at')
-    .eq('operator_id', user.id)
-    .eq('module_id', id)
-    .eq('critical_fail', true)
-    .order('submitted_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (lastCritFail?.submitted_at) {
-    const cooldownUntil = new Date(lastCritFail.submitted_at).getTime() + 24 * 60 * 60 * 1000;
-    if (Date.now() < cooldownUntil) {
+  // Corrective action gate — replaces the 24-hour lockout. A critical fail must be
+  // remediated in writing before re-attempting, but there is NO timer: the learner
+  // releases this themselves and the assessment reopens the moment they finish.
+  //
+  // Resolved server-side so the flow survives the learner closing the tab — they do
+  // not have to have kept hold of anything from the results screen.
+  if (!isPrivileged) {
+    const outstanding = await getOutstandingRemediation(user.id, id);
+    if (outstanding) {
       return (
         <div style={{ padding: '40px 48px' }}>
-          <CooldownScreen
-            moduleId={id}
-            moduleTitle={module.title}
-            cooldownUntil={new Date(cooldownUntil).toISOString()}
-          />
+          <CorrectiveActionScreen outstanding={outstanding} />
         </div>
       );
     }
