@@ -151,13 +151,46 @@ right one. That is an audit defect, not merely a bug.
 
 ### 4.2 The approach
 
-1. Migration `027` stamps a **stable `slideId`** into every slide object in `module_lessons.slides`,
+1. Migration `028` stamps a **stable `slideId`** into every slide object in `module_lessons.slides`,
    derived once from its current position: `<MODULE_ID>-s<NN>`, e.g. `PI-14-s03`.
 2. `quiz_questions` gains a nullable `remediation_slide_id TEXT` column.
-3. At runtime, the anchor is resolved by scanning the module's slides for a matching `slideId`.
-   Resolution failure degrades per §3.4.
+3. At runtime the anchor's **module is derived from the slide id itself** — `PI-06-s02` means module
+   `PI-06` — and the slide is then located within that module's slides. Resolution failure degrades
+   per §3.4.
 4. Any future slide edit that preserves the `slideId` field preserves the anchor. A rewrite that drops
    or renumbers it degrades safely rather than mispointing.
+
+### 4.2.1 Anchors may cross modules — and must, for capstones
+
+**An anchor is not restricted to the question's own module.** A capstone question tests material
+taught earlier in the track; that is what a capstone *is*. Restricting anchors to the same module
+forces `NONE` on precisely the questions where the gate matters most — the last gate before
+certification.
+
+This was not theoretical. Reviewing PI-24 (the PI final examination) produced:
+
+| Question | Tests | Own-module result |
+|---|---|---|
+| `pi24-q7` | Perjury, OCGA 16-10-70 | `NONE` — not taught on any PI-24 slide |
+| `pi24-q9` | Citizen arrest, OCGA 17-4-60 | `NONE` — not taught on any PI-24 slide |
+| `pi24-q3` | CFAA / computer trespass | anchored, but only to a syllabus overview |
+
+All three are taught properly elsewhere in the track — e.g. *"Citizen's Arrest Under OCGA 17-4-60:
+What It Is and Is Not"*. Cross-module anchoring takes PI-24's selectable pool from **5 slides to 164**,
+and UAS-24's from **3 to 133**.
+
+**Two constraints, both enforced (`scripts/validate-anchor-answers.mjs`):**
+
+1. **Same track.** A `unarmed-security` question may not anchor to a `private-detective` slide — the
+   learner is not enrolled in that track and the module gate would block them.
+2. **At or before in sequence.** The anchor's module must have `sequence_order <=` the question's
+   module. Sequential gating guarantees the learner has already passed it, so the link always
+   resolves. A later module would send them into content they have not unlocked.
+
+**No schema change is required.** `remediation_slide_id` and `remediation_records.slide_id` are `TEXT`
+and already hold a fully-qualified slide id. The only code consequence is that the corrective-action
+screen builds its review link against the *anchor's* module rather than the question's:
+`/dashboard/module/<module-from-slide-id>?slide=<slideId>`.
 
 ### 4.3 Producing the mappings
 
@@ -175,7 +208,7 @@ unambiguously; vague labels such as "Ethics" or "Licensing", and questions that 
 two slides, will not. **Rows that remain low-confidence after review ship as `NULL`** and degrade per
 §3.4 — a wrong anchor is worse than no anchor.
 
-The reviewed mapping is committed as seed data inside migration `027`.
+The reviewed mapping is committed as seed data inside migration `028`.
 
 The generation script is a build-time tool, not runtime code, and lives in `scripts/`.
 
@@ -235,7 +268,7 @@ ALTER TABLE quiz_questions ADD COLUMN IF NOT EXISTS remediation_slide_id TEXT;
 
 ### 5.3 Slide ID stamping
 
-Migration `027` rewrites `module_lessons.slides`, adding `"slideId": "<MODULE_ID>-s<NN>"` to each
+Migration `028` rewrites `module_lessons.slides`, adding `"slideId": "<MODULE_ID>-s<NN>"` to each
 slide object at its current index. Idempotent: slides already carrying a `slideId` are left untouched.
 
 ---
@@ -256,7 +289,7 @@ These are **not** changed. Only the consequence of a critical fail changes; the 
 
 | File | Change | Purpose |
 |---|---|---|
-| `supabase/migrations/027_corrective_action.sql` | **new** | `slideId` stamping · `remediation_slide_id` column · `remediation_records` + RLS · reviewed anchor seed data · capstone description copy fix |
+| `supabase/migrations/028_corrective_action.sql` | **new** | `slideId` stamping · `remediation_slide_id` column · `remediation_records` + RLS · reviewed anchor seed data · capstone description copy fix |
 | `src/lib/remediation.ts` | **new** | Field minimum lengths, the outstanding-remediation resolver shared by page and route, slide-anchor resolution |
 | `src/app/api/remediation/[moduleId]/route.ts` | **new** | `POST` one corrective-action record. Validates ownership, that the question was genuinely critical and genuinely missed in that session, and field minimums. Service-role write. Mirrors `api/practical/[moduleId]`. |
 | `src/components/quiz/CorrectiveActionScreen.tsx` | **new** | The gate screen, with a per-item panel: question, answers, explanation, slide link, three fields |
@@ -280,7 +313,26 @@ the page and route gates in this codebase are already independent implementation
 The PI-24 and UAS-24 capstone `mjm_modules.description` values contain the string *"any wrong answer
 triggers 24-hour cooldown"*. These live in the **live database**. Editing
 `009_pi_module_registry.sql:106` and `017_uas_module_registry.sql:106` changes nothing in production —
-those migrations have already run. Migration `027` must issue explicit `UPDATE` statements.
+those migrations have already run. Migration `028` must issue explicit `UPDATE` statements.
+
+**Related defect, already resolved — see `027_remove_non_georgia_content.sql`.** MOD-04's live
+description ended *"Maps to US 123515 — Handle and Use a Handgun."* `US 123515` is a **South African
+SAQA unit standard** on a Georgia GBPDSA course under Rule 509-3-.01, and it was student-visible.
+
+It was **not** drawn from MJM's source material: a full-text search of all three original course PDFs
+(Armed 16hr, PI 72hr, Basic Security 24hr — 92,808 words) returned **zero** hits for SAQA / PSIRA /
+PFTC / "unit standard" / `US 1xxxxx` / "Firearms Control Act" / "South Africa", while a control search
+confirmed GBPDSA, 509-3, OCGA and Georgia appear throughout. It was introduced during the platform
+build by `004_syllabus_phase1_3.sql:42` and maps to no standard this course must teach.
+
+**Removed from production 2026-09-09** and recorded as migration `027`. A sweep of `mjm_modules` (64),
+`module_lessons` (393 slides) and `quiz_questions` (329) confirms **0** non-Georgia items remain.
+
+Out-of-state references that are **legitimate Georgia teaching and must be left alone**: Florida
+licence reciprocity (a FL licence is not valid in GA), all-party consent states under federal ECPA
+(stops a GA PI applying Georgia's one-party rule where it is a crime), and `Horton v. California`
+(federal plain-view doctrine, binding in Georgia). Re-verify any time with
+`node scripts/strip-non-georgia-content.mjs` (dry run).
 
 ---
 
@@ -317,13 +369,20 @@ first meaningful coverage of the gating logic:
 ## 10. Rollout
 
 1. Generate anchor candidates; Sheldon reviews and corrects (§4.3).
-2. Apply migration `027`. Next migration number is `027` — `026` is the highest applied in production.
+2. Apply migration `028`.
+
+   **Migration state, to avoid confusion:** `026` is the highest migration actually *run* through the
+   migration process. `027_remove_non_georgia_content.sql` exists as a file but has **not** been run —
+   its effect was applied directly to production on 2026-09-09 via
+   `scripts/strip-non-georgia-content.mjs --apply`, and the file exists so a rebuilt database matches
+   prod. It carries a `LIKE '%US 123515%'` guard, so running it later is a safe no-op. This work is
+   therefore `028`.
 3. Deploy. No data backfill is required: learners with an *expired* 24-hour lockout are unaffected;
    learners inside an *active* one are released immediately and will be asked for corrective action on
    their next attempt at that module rather than retroactively.
 4. Confirm the capstone descriptions no longer mention a cooldown.
 
-**Migration `027` must land before the code deploys, not alongside it.** The gate's degradation path
+**Migration `028` must land before the code deploys, not alongside it.** The gate's degradation path
 (§3.4) depends on `remediation_slide_id` existing and on slides carrying `slideId`. Deploying the code
 first would put every learner released from an active lockout onto the degraded path at once, and any
 learner mid-remediation would hit a missing column. The ordering above is the required ordering.

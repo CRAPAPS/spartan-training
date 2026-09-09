@@ -16,11 +16,12 @@
 - **`operator_progress.status = 'reset'` fires the `TACTICAL_RESET` audit event** — one of only five events the `001_initial_schema.sql` trigger emits. `dashboard/records`, `dashboard/admin` and `AuditLogViewer.tsx` read it. Do not stop writing it.
 - **No timer, no cooldown, no wall-clock delay** anywhere in the new flow. The gate is released by the learner's own action only. (Spec §2)
 - **A missing or unresolvable slide anchor must never trap a learner.** It degrades to a module-overview link with fields enabled immediately. (Spec §3.4)
+- **Anchors may cross modules.** A capstone question is anchored to the slide that teaches it, which is usually in an earlier module. The anchor's module is derived from the slide id (`PI-06-s02` → `PI-06`), so the review link is `/dashboard/module/PI-06?slide=PI-06-s02`. Two constraints, enforced by `scripts/validate-anchor-answers.mjs`: the anchor must be in the **same track**, and in a module at or **before** the question's module in `sequence_order` — sequential gating then guarantees the learner has already passed it. No schema change; `remediation_slide_id` is `TEXT` and already holds a fully-qualified id. (Spec §4.2.1)
 - **Privileged bypass:** roles `admin`, `coordinator`, `super_admin` skip the gate, matching every other gate in the codebase.
-- **Migration `027` must be applied BEFORE the code deploys.** (Spec §10)
+- **Migration `028` must be applied BEFORE the code deploys.** (Spec §10)
 - Service role (`supabaseAdmin`) performs all writes. New tables get `SELECT` policies only — no `INSERT`/`UPDATE` policies — matching `report_submissions`.
 - Test runner is Vitest: `npm test` runs `vitest run`. Path alias `@/` → `src/`.
-- Migration files are numbered sequentially; `026` is the highest applied in production, so this work uses `027`.
+- Migration files are numbered sequentially. `026` is the highest migration actually **run**. `027_remove_non_georgia_content.sql` exists as a file but has **not** been run — its effect was applied directly to prod on 2026-09-09 via `scripts/strip-non-georgia-content.mjs --apply`, and it is idempotent (guarded by `LIKE '%US 123515%'`), so running it later is a no-op. This work is `028`.
 
 ---
 
@@ -34,7 +35,7 @@
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `resolveVerdict(verdict: string, proposedSlideId: string | null, confidence: AnchorConfidence): string | null` from `@/lib/remediation`; and a block of `UPDATE quiz_questions SET remediation_slide_id = '<slide-id>' WHERE id = '<question-id>';` statements written into `supabase/migrations/027_corrective_action.sql` between the markers `-- >>> ANCHORS BEGIN` and `-- >>> ANCHORS END`.
+- Produces: `resolveVerdict(verdict: string, proposedSlideId: string | null, confidence: AnchorConfidence): string | null` from `@/lib/remediation`; and a block of `UPDATE quiz_questions SET remediation_slide_id = '<slide-id>' WHERE id = '<question-id>';` statements written into `supabase/migrations/028_corrective_action.sql` between the markers `-- >>> ANCHORS BEGIN` and `-- >>> ANCHORS END`.
 
 **Context:** `scripts/generate-remediation-anchors.mjs` already exists and produced the review list (65 critical questions: 41 HIGH, 15 MEDIUM, 9 LOW). The review table has a **Verdict** column the reviewer fills with `OK`, a replacement slide id such as `PI-14-s07`, or `NONE`. This task turns those verdicts into SQL. A blank verdict on a HIGH row means "accept the proposal"; a blank verdict on a MEDIUM or LOW row means "not yet reviewed" and must ship as `NONE` rather than guessing.
 
@@ -123,7 +124,7 @@ Create `scripts/apply-remediation-anchors.mjs`:
  * apply-remediation-anchors.mjs
  *
  * Reads the reviewed anchor list and writes the UPDATE statements into
- * supabase/migrations/027_corrective_action.sql, between the ANCHORS markers.
+ * supabase/migrations/028_corrective_action.sql, between the ANCHORS markers.
  *
  * Run AFTER the review list has been filled in, and AFTER Task 2 has created the
  * migration file with its markers. Re-runnable: it replaces whatever currently
@@ -138,7 +139,7 @@ import { fileURLToPath } from 'url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REVIEW = resolve(ROOT, 'docs/superpowers/specs/2026-09-08-remediation-anchors-review.md');
-const MIGRATION = resolve(ROOT, 'supabase/migrations/027_corrective_action.sql');
+const MIGRATION = resolve(ROOT, 'supabase/migrations/028_corrective_action.sql');
 
 const BEGIN = '-- >>> ANCHORS BEGIN';
 const END = '-- >>> ANCHORS END';
@@ -200,10 +201,10 @@ git commit -m "feat(remediation): anchor verdict resolution + apply script"
 
 ---
 
-### Task 2: Migration 027 — schema, slide ids, copy
+### Task 2: Migration 028 — schema, slide ids, copy
 
 **Files:**
-- Create: `supabase/migrations/027_corrective_action.sql`
+- Create: `supabase/migrations/028_corrective_action.sql`
 
 **Interfaces:**
 - Consumes: the apply script from Task 1 (run after this file exists, to fill the `ANCHORS` markers).
@@ -213,10 +214,10 @@ git commit -m "feat(remediation): anchor verdict resolution + apply script"
 
 - [ ] **Step 1: Write the migration**
 
-Create `supabase/migrations/027_corrective_action.sql`:
+Create `supabase/migrations/028_corrective_action.sql`:
 
 ```sql
--- Migration: 027_corrective_action
+-- Migration: 028_corrective_action
 -- Replaces the 24-hour critical-fail lockout with a learner-released
 -- corrective-action gate. See docs/superpowers/specs/2026-09-08-corrective-action-gate-design.md
 --
@@ -318,7 +319,7 @@ Expected: prints how many of 65 critical questions were anchored, and rewrites t
 
 - [ ] **Step 3: Apply the migration, then verify the slide-id stamping**
 
-Apply `027` to the database, then run:
+Apply `028` to the database, then run:
 
 ```sql
 -- Every slide must have a slideId
@@ -359,8 +360,8 @@ Expected: 0 rows. Any row here is an anchor pointing at a slide that does not ex
 - [ ] **Step 6: Commit**
 
 ```bash
-git add supabase/migrations/027_corrective_action.sql
-git commit -m "feat(db): 027 corrective action gate — slide ids, anchors, records table"
+git add supabase/migrations/028_corrective_action.sql
+git commit -m "feat(db): 028 corrective action gate — slide ids, anchors, records table"
 ```
 
 ---
@@ -380,6 +381,7 @@ git commit -m "feat(db): 027 corrective action gate — slide ids, anchors, reco
   - `computeMissedItems(answers: Record<string, string | null>, criticalQuestions: CriticalQuestionRow[], remediatedQuestionIds: string[]): MissedItem[]`
   - `validateNotes(notes: { noteError: string; noteStandard: string; noteFieldAction: string }): string | null`
   - `resolveSlideIndex(slides: unknown[], slideId: string | null): number | null`
+  - `moduleIdFromSlideId(slideId: string | null): string | null`
 
 **Context:** `quiz_sessions.answers` is JSONB shaped `{ "<questionId>": "A" | "B" | "C" | "D" | null }` — the original option key the learner chose, written by `src/app/api/quiz/[moduleId]/route.ts`. A critical question is "missed" when its recorded answer is not equal to `quiz_questions.correct`. Keeping this layer pure makes the gate testable without a database.
 
@@ -393,6 +395,7 @@ import {
   computeMissedItems,
   validateNotes,
   resolveSlideIndex,
+  moduleIdFromSlideId,
   NOTE_MIN_CHARS,
   type CriticalQuestionRow,
 } from '@/lib/remediation';
@@ -486,6 +489,24 @@ describe('resolveSlideIndex', () => {
     expect(resolveSlideIndex([{ heading: 'no id' }], 'MOD-02-s00')).toBeNull();
   });
 });
+
+describe('moduleIdFromSlideId', () => {
+  it('derives the module from a slide id', () => {
+    expect(moduleIdFromSlideId('PI-06-s02')).toBe('PI-06');
+    expect(moduleIdFromSlideId('MOD-02-s01')).toBe('MOD-02');
+    expect(moduleIdFromSlideId('UAS-24-s00')).toBe('UAS-24');
+  });
+
+  it('handles double-digit slide numbers', () => {
+    expect(moduleIdFromSlideId('PI-14-s12')).toBe('PI-14');
+  });
+
+  it('returns null for null or a malformed id', () => {
+    expect(moduleIdFromSlideId(null)).toBeNull();
+    expect(moduleIdFromSlideId('not-a-slide-id')).toBeNull();
+    expect(moduleIdFromSlideId('PI-06')).toBeNull();
+  });
+});
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -572,12 +593,27 @@ export function resolveSlideIndex(slides: unknown[], slideId: string | null): nu
   );
   return i === -1 ? null : i;
 }
+
+/**
+ * The module a slide id belongs to: 'PI-06-s02' -> 'PI-06'.
+ *
+ * Anchors cross modules (a capstone question is taught in an earlier module), so
+ * the review link must target the ANCHOR's module, not the question's. The slide
+ * id already carries that, so no extra column is needed.
+ *
+ * Returns null for a malformed id, which degrades per the rules in the spec §3.4.
+ */
+export function moduleIdFromSlideId(slideId: string | null): string | null {
+  if (!slideId) return null;
+  const m = slideId.match(/^(.+)-s\d+$/);
+  return m ? m[1] : null;
+}
 ```
 
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `npm test -- remediation.test`
-Expected: PASS (15 tests).
+Expected: PASS (18 tests).
 
 - [ ] **Step 5: Commit**
 
@@ -994,7 +1030,7 @@ import { useRouter } from 'next/navigation';
 import { MonoLabel } from '@/components/primitives/MonoLabel';
 import { BrassButton } from '@/components/primitives/BrassButton';
 import { Rule } from '@/components/primitives/Rule';
-import { NOTE_MIN_CHARS, type MissedItem, type OutstandingRemediation } from '@/lib/remediation';
+import { NOTE_MIN_CHARS, moduleIdFromSlideId, type MissedItem, type OutstandingRemediation } from '@/lib/remediation';
 
 const FIELDS = [
   { key: 'noteError',       label: 'What I answered, and why it was wrong' },
@@ -1064,8 +1100,12 @@ function ItemPanel({
   const enabled = viewedAt !== null;
   const complete = FIELDS.every(f => notes[f.key].trim().length >= NOTE_MIN_CHARS);
 
+  // The anchor may live in an EARLIER module than the question — a capstone
+  // question is taught upstream. Target the anchor's own module, falling back to
+  // the question's if the id is malformed.
+  const anchorModule = moduleIdFromSlideId(item.slideId) ?? moduleId;
   const reviewHref = item.slideId
-    ? `/dashboard/module/${moduleId}?slide=${encodeURIComponent(item.slideId)}`
+    ? `/dashboard/module/${anchorModule}?slide=${encodeURIComponent(item.slideId)}`
     : `/dashboard/module/${moduleId}`;
 
   async function submit() {
@@ -1416,20 +1456,42 @@ Replace `This operator has been placed in Tactical Reset status. A 24-hour coold
 This operator has been placed in Tactical Reset status. Module ${moduleId} is closed to re-examination until they review the source material and record a written corrective action for each critical item missed. No time penalty applies.
 ```
 
-- [ ] **Step 5: Verify no lockout copy survives**
+- [ ] **Step 5: Update `CLAUDE.md`**
 
-Run: `grep -rniE "24.hour|cooldown|lockout" src/`
+`CLAUDE.md` (repo root) documents the old behaviour and will mislead every future session. Under
+**Exam integrity**, replace:
+
+```
+- Critical Fail: wrong answer on `is_critical` question → 24-hour cooldown (`CooldownScreen`)
+```
+
+with:
+
+```
+- Critical Fail: wrong answer on `is_critical` question → corrective action gate (`CorrectiveActionScreen`).
+  No timer. The learner must re-read the anchored source slide and record three written fields per
+  missed item; the retry reopens immediately on submission. Gate logic lives in `src/lib/remediation.ts`
+  and is called by BOTH the quiz page and the quiz API route.
+```
+
+While in that file, also correct the stale line **"No test suite exists. Type-check is the primary
+correctness gate."** — Vitest is configured (`vitest.config.ts`, `npm test` → `vitest run`) and
+`src/__tests__/shuffle.test.ts` already exists. This task adds several more suites.
+
+- [ ] **Step 6: Verify no lockout copy survives**
+
+Run: `grep -rniE "24.hour|cooldown|lockout" src/ CLAUDE.md`
 Expected: no output.
 
-- [ ] **Step 6: Type-check and run the full suite**
+- [ ] **Step 7: Type-check and run the full suite**
 
 Run: `npm run type-check && npm test`
 Expected: no type errors; all tests pass.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/components/quiz/QuizClient.tsx src/lib/email.ts
+git add src/components/quiz/QuizClient.tsx src/lib/email.ts CLAUDE.md
 git commit -m "docs(copy): replace 24-hour lockout wording with corrective action"
 ```
 
@@ -1487,7 +1549,7 @@ Order matters — see Global Constraints.
 - [ ] Reviewed anchor list is filled in and `node scripts/apply-remediation-anchors.mjs` has been run
 - [ ] `npm test` passes
 - [ ] `npm run type-check` passes
-- [ ] Migration `027` applied to production **first**
+- [ ] Migration `028` applied to production **first**
 - [ ] Post-migration checks from Task 2 Steps 3–5 all return the expected results
 - [ ] Code deployed
 - [ ] Confirm `SELECT id FROM mjm_modules WHERE description ILIKE '%cooldown%'` returns 0 rows

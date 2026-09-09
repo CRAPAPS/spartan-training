@@ -1,0 +1,73 @@
+# Source-slide anchor answers returned by the training specialist.
+# Format: ANSWER for <question_id>: <slide_id | NONE>
+# Validate:  node scripts/validate-anchor-answers.mjs      (ids, track, sequence)
+# Then:      node scripts/verify-anchor-proof.mjs          (does the slide teach it)
+# DO NOT apply until validation passes with zero errors.
+#
+# REVISION HISTORY
+#   rev 1 — 18 valid, 1 invalid (uas05-q5), 5 unanswered.
+#   rev 2 — pi04-q5 s04->s01 (a regression), pi24-q9 -> NONE.
+#   rev 3 — reasoning supplied with slide quotations; pi04-q5 reverted to s04;
+#           uas05-q5 relabelled uas04-q5. Disclosed UAS-07/12/16/20/24 were
+#           TRUNCATED in transit, so those earlier answers were withdrawn.
+#   rev 4 — cross-module anchoring adopted; per-module worksheets re-sent. He
+#           anchored the capstones to the modules that actually teach them.
+#   rev 5 — THIS REVISION. One evidence-backed correction by Claude, plus removal
+#           of a non-critical row. See below.
+#
+# CROSS-MODULE ANCHORS — the payoff. All validated (same track, earlier module):
+#   pi24-q7  -> PI-15-s03  "Perjury: The Absolute Line — Truth Over Client Loyalty"
+#                          (OCGA 16-10-70 confirmed in slide). Was NONE.
+#   pi24-q9  -> PI-05-s00  "Citizen Arrest Under OCGA 17-4-60: What It Is and Is Not"
+#                          (statute confirmed in slide). Was NONE.
+#   uas24-q3 -> UAS-07-s01 "Imminent Threat Standard"      (confirmed)
+#   uas24-q7 -> UAS-12-s00 "Role in Emergency Response"    (confirmed)
+#   uas24-q9 -> UAS-03-s01 "Confidentiality"               (confirmed)
+#
+# CLAUDE CORRECTION, PENDING SHELDON'S CONFIRMATION
+#   pi24-q3: specialist said PI-21-s01. CHANGED to PI-21-s03.
+#     PI-21-s01 is "Digital Evidence: Preservation, Hash Verification, Chain of
+#     Custody" — about handling evidence already lawfully held, and it does NOT
+#     contain 16-9-93 (verified). The question asks about accessing an account
+#     with client-supplied credentials. PI-21-s03 "Limits of PI Cyber Work" has
+#     the key point "Unauthorized system access: CFAA federal crime regardless of
+#     target or client instruction" and legalRef 18 U.S.C. 1030 — verbatim the
+#     point tested. Revert to PI-21-s01 if the specialist disagrees.
+#
+# REMOVED
+#   uas12-q2 -> UAS-12-s01 (R-A-C-E fire response). The question exists but is
+#   NOT is_critical, so the gate never fires on it — the anchor would be dead
+#   weight. He appears to have answered a question that was not on the sheet.
+#
+#   rev 6 — 2026-09-09. The last two answers supplied, this time quoting the REAL
+#           platform questions verbatim (uas12-q1, uas12-q5, uas16-q3). All 24
+#           decisions now have an answer. His covering document again used his own
+#           module numbering (UAS-01..16 + ARM-01..03) and a "PFTC/GBPDSA" header —
+#           ignored; only the three mappings were taken.
+
+ANSWER for mod01-q3:  MOD-01-s00
+ANSWER for mod02-q5:  MOD-02-s03
+ANSWER for mod09-q4:  MOD-09-s04
+ANSWER for mod-11-q3: MOD-11-s02
+ANSWER for mod-12-q2: MOD-12-s01
+ANSWER for mod-13-q2: MOD-13-s01
+ANSWER for pi04-q5:   PI-04-s04
+ANSWER for uas01-q1:  UAS-01-s00
+ANSWER for uas03-q1:  UAS-03-s03
+ANSWER for uas03-q3:  UAS-03-s00
+ANSWER for uas04-q4:  UAS-04-s02
+ANSWER for uas04-q5:  UAS-04-s03
+ANSWER for uas06-q2:  UAS-06-s01
+ANSWER for uas07-q3:  UAS-07-s03
+ANSWER for uas12-q1:  UAS-12-s00
+ANSWER for uas12-q5:  UAS-12-s00
+ANSWER for uas16-q3:  UAS-16-s01
+ANSWER for uas20-q3:  UAS-20-s01
+
+# cross-module capstone anchors
+ANSWER for pi24-q3:   PI-21-s03
+ANSWER for pi24-q7:   PI-15-s03
+ANSWER for pi24-q9:   PI-05-s00
+ANSWER for uas24-q3:  UAS-07-s01
+ANSWER for uas24-q7:  UAS-12-s00
+ANSWER for uas24-q9:  UAS-03-s01
