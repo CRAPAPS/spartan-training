@@ -218,7 +218,7 @@ export async function sendCriticalFailAlert(
                 <p style="margin:0;font-size:13px;color:#B8B0A0;">Time: <strong style="color:#F0EDE6;">${new Date().toUTCString()}</strong></p>
               </td></tr>
             </table>
-            <p style="color:#B8B0A0;font-size:13px;line-height:1.6;margin:0;">This operator has been placed in Tactical Reset status. A 24-hour cooldown is in effect. Module ${moduleId} must be reviewed in full before re-examination.<br/><br/>Review the full event log at <a href="https://spartantraining.live/dashboard/admin" style="color:#C5A059;">spartantraining.live/dashboard/admin</a>.</p>
+            <p style="color:#B8B0A0;font-size:13px;line-height:1.6;margin:0;">This operator has been placed in Tactical Reset status. Module ${moduleId} is closed to re-examination until they review the source material and record a written corrective action for each critical item missed. No time penalty applies — the assessment reopens as soon as they complete it.<br/><br/>Review the full event log at <a href="https://spartantraining.live/dashboard/admin" style="color:#C5A059;">spartantraining.live/dashboard/admin</a>.</p>
           </td>
         </tr>
         <tr>

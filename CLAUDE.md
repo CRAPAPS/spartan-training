@@ -12,7 +12,9 @@ npm run lint         # ESLint
 npm run db:generate-types  # Regenerate src/types/supabase.ts from live schema
 ```
 
-No test suite exists. Type-check is the primary correctness gate.
+Vitest is configured (`vitest.config.ts`, `npm test` → `vitest run`, discovers `src/**/*.test.ts`).
+Coverage is partial — the gate logic and shuffle are tested; most routes and components are not — so
+type-check remains a primary correctness gate alongside it.
 
 ## Architecture
 
@@ -57,7 +59,12 @@ Middleware (`src/middleware.ts`) guards `/dashboard/*` — redirects unauthentic
 - Fisher-Yates shuffle on load; `originalKey` bridges back to correct answer for grading
 - 90-second per-question countdown, auto-submit on timeout
 - Tab/focus loss: 3 strikes → auto-submit
-- Critical Fail: wrong answer on `is_critical` question → 24-hour cooldown (`CooldownScreen`)
+- Critical Fail: wrong answer on `is_critical` question → corrective action gate (`CorrectiveActionScreen`).
+  **No timer.** The learner must re-read the anchored source slide and record three written fields per
+  missed item; the assessment reopens immediately on submission. Gate logic lives in
+  `src/lib/remediation.ts` and is called by BOTH the quiz page and the quiz API route so they cannot
+  drift. Anchors are `quiz_questions.remediation_slide_id` and may point at an **earlier module in the
+  same track** — a capstone question is taught upstream.
 - All grading in API route (`/api/quiz/[moduleId]`) — never client-side
 
 ### Key API routes

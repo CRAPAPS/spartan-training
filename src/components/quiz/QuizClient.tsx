@@ -318,7 +318,7 @@ export function QuizClient({ moduleId, moduleTitle, passingScore, questions, att
               color: '#E84040',
               textTransform: 'uppercase',
             }}>
-              Critical Assessment — Wrong Answer = Tactical Reset
+              Critical Assessment — Wrong Answer Requires Corrective Action
             </span>
           </div>
         )}
@@ -507,7 +507,7 @@ function IntroView({ moduleId, moduleTitle, passingScore, questionCount, attempt
         {[
           { icon: '⏱', label: '90-second timer per question', detail: 'Unanswered questions are recorded as null on timeout.' },
           { icon: '→', label: 'One question at a time — no going back', detail: 'Once you confirm an answer and advance, it is locked.' },
-          { icon: '⚠', label: 'Critical Fail questions', detail: 'Any critical question answered incorrectly triggers an immediate Tactical Reset and a 24-hour lockout.' },
+          { icon: '⚠', label: 'Critical Fail questions', detail: 'Any critical question answered incorrectly requires you to review the source material and record a written corrective action before re-attempting. There is no waiting period.' },
           { icon: '⛶', label: 'Fullscreen mode enforced', detail: 'The browser will enter fullscreen when you begin.' },
           { icon: '◉', label: `Focus monitoring — ${MAX_TAB_STRIKES} strikes before auto-submit`, detail: 'Leaving this tab or switching windows is recorded. Three exits trigger automatic submission.' },
           { icon: '✦', label: 'Questions and options are randomised each attempt', detail: 'Answer order is shuffled server-side — not stored in your browser.' },
@@ -605,10 +605,10 @@ function ResultsView({ result, moduleId, moduleTitle, passingScore }: ResultsVie
         {isCriticalFail && (
           <div style={{ marginTop: '20px', padding: '12px 16px', border: '1px solid rgba(232,64,64,.4)', background: 'rgba(232,64,64,.08)' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.18em', color: '#E84040', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>
-              ⚠ Tactical Reset Triggered — 24-Hour Lockout Now Active
+              ⚠ Tactical Reset Triggered — Corrective Action Required
             </span>
             <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--ink-dim)', lineHeight: 1.6 }}>
-              A Critical Fail question was answered incorrectly. Module progress has been reset and a 24-hour mandatory review period is now enforced. This event is recorded in the immutable audit trail. Review all explanations below before attempting again.
+              A Critical Fail question was answered incorrectly. Module progress has been reset and this event is recorded in the immutable audit trail. Review the source material and record your corrective action to reopen the assessment — there is no waiting period.
             </span>
           </div>
         )}
