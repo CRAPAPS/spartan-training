@@ -38,15 +38,9 @@ SET slides = jsonb_set(
           replace(
             slides->1->>'body',
             'CROWD DENSITY THRESHOLDS:',
-            E'HOW A CRUSH KILLS — COMPRESSIVE ASPHYXIA:\n'
-            'A crowd crush does not kill by trampling. At high density the surrounding crowd '
-            'exerts sustained lateral pressure on the chest and abdomen. The diaphragm cannot '
-            'expand, breathing stops, and the person suffocates while still standing upright. '
-            'Victims are frequently held vertical by the crowd itself and can appear conscious '
-            'and uninjured to anyone more than a few feet away. This is why you monitor density '
-            'rather than waiting for visible violence, and why any person reporting that they '
-            E'cannot breathe is a medical emergency and not a complaint.\n\n'
-            'CROWD DENSITY THRESHOLDS:'
+            -- One E'' literal. Postgres will not accept an E prefix on a
+            -- continuation literal in implicit concatenation (ERROR 42601).
+            E'HOW A CRUSH KILLS — COMPRESSIVE ASPHYXIA:\nA crowd crush does not kill by trampling. At high density the surrounding crowd exerts sustained lateral pressure on the chest and abdomen. The diaphragm cannot expand, breathing stops, and the person suffocates while still standing upright. Victims are frequently held vertical by the crowd itself and can appear conscious and uninjured to anyone more than a few feet away. This is why you monitor density rather than waiting for visible violence, and why any person reporting that they cannot breathe is a medical emergency and not a complaint.\n\nCROWD DENSITY THRESHOLDS:'
           )
         )
       ),
